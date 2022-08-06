@@ -10,10 +10,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Film {
-    int id;
-    String name;
-    String description;
-    LocalDate releaseDate;
-    int duration;
+    private int id;
+    private String name;
+    private String description;
+    private LocalDate releaseDate;
+    private int duration;
 }
 

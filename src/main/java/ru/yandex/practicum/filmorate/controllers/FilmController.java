@@ -21,14 +21,15 @@ public class FilmController {
         return ++idFilm;
     }
 
-    private boolean validatorFilm(Film film) {
+    protected boolean validatorFilm(Film film) {
         if (film.getName().isBlank() || (film.getDuration() <= 0) || LocalDate.of(1895, 12, 28).isAfter(film.getReleaseDate())) {
             return false;
         } else if (film.getDescription() != null) {
             if (film.getDescription().length() > 200) {
                 return false;
             }
-        } return true;
+        }
+        return true;
     }
 
 
@@ -50,7 +51,7 @@ public class FilmController {
 
     @PutMapping
     public Film update(@RequestBody Film film) {
-        for (Film film1: films) {
+        for (Film film1 : films) {
             if (film1.getId() == film.getId()) {
                 films.remove(film1);
                 films.add(film);

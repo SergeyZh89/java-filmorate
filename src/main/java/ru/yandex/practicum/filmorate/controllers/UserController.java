@@ -21,8 +21,9 @@ public class UserController {
         return ++idUser;
     }
 
-    private boolean validatorUser(User user) {
-        if (user.getEmail().isBlank() || !user.getEmail().contains("@") || LocalDate.now().isBefore(user.getBirthday())) {
+    protected boolean validatorUser(User user) {
+        if (user.getEmail().isBlank() || !user.getEmail().contains("@") || LocalDate.now().isBefore(user.getBirthday())
+                || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             return false;
         } else if (user.getName().isEmpty()) {
             user.setName(user.getLogin());
