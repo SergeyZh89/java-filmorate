@@ -17,48 +17,51 @@ public class FilmController {
     private List<Film> films = new ArrayList<>();
     private int idFilm;
 
+    protected void validatorFilm(Film film) {
+        if (film.getName().isBlank()) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Имя не должно быть пустым");
+        } else if (film.getDuration() <= 0) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Продолжительность должна быть положительной");
+        } else if (LocalDate.of(1895, 12, 28).isAfter(film.getReleaseDate())) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Дата не должна быть раньше 1895 года 28 декабря");
+        } else if (film.getDescription() != null) {
+            if (film.getDescription().length() <= 200) {
+                return;
+            }
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Длина описания не должна быть больше 200 символов");
+        }
+    }
+
     private int idFilms() {
         return ++idFilm;
     }
 
-    protected boolean validatorFilm(Film film) {
-        if (film.getName().isBlank() || (film.getDuration() <= 0) || LocalDate.of(1895, 12, 28).isAfter(film.getReleaseDate())) {
-            return false;
-        } else if (film.getDescription() != null) {
-            if (film.getDescription().length() > 200) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
     @GetMapping
     public List<Film> getFilms() {
+        log.debug("Получен запрос на список фильмов");
         return films;
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
-        if (validatorFilm(film)) {
-            film.setId(idFilms());
-            films.add(film);
-        } else {
-            throw new ValidationException(HttpStatus.BAD_REQUEST);
-        }
-        return film;
+    public Film create(@RequestBody Film newFilm) {
+        log.debug("Получен запрос на добавление фильма");
+        validatorFilm(newFilm);
+        newFilm.setId(idFilms());
+        films.add(newFilm);
+        return newFilm;
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
-        for (Film film1 : films) {
-            if (film1.getId() == film.getId()) {
-                films.remove(film1);
-                films.add(film);
+    public Film update(@RequestBody Film newFilm) {
+        log.debug("Получен запрос на обновление фильма");
+        for (Film film : films) {
+            if (film.getId() == newFilm.getId()) {
+                films.remove(film);
+                films.add(newFilm);
             } else {
-                throw new ValidationException(HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ValidationException(HttpStatus.INTERNAL_SERVER_ERROR, "Такого фильма нет");
             }
         }
-        return film;
+        return newFilm;
     }
 }

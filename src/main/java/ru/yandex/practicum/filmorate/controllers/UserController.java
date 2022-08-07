@@ -21,44 +21,48 @@ public class UserController {
         return ++idUser;
     }
 
-    protected boolean validatorUser(User user) {
-        if (user.getEmail().isBlank() || !user.getEmail().contains("@") || LocalDate.now().isBefore(user.getBirthday())
-                || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            return false;
+    protected void validatorUser(User user) {
+        if (user.getEmail().isBlank()) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Имя не должно быть пустым");
+        } else if (!user.getEmail().contains("@")) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Email должен содержать символ @");
+        } else if (LocalDate.now().isBefore(user.getBirthday())) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Дата рождения не должна быть в будущем");
+        } else if (user.getLogin().isBlank()) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Логин не должен быть пустым");
+        } else if (user.getLogin().contains(" ")) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Логин не должен содержать пробелы");
         } else if (user.getName().isEmpty()) {
             user.setName(user.getLogin());
-            return true;
-        } else {
-            return true;
         }
     }
 
     @GetMapping
     public List<User> getUsers() {
+        log.debug("Получен запрос на список пользователей");
         return users;
     }
 
     @PostMapping
     public User createUser(@RequestBody User user) {
-        if (validatorUser(user)) {
-            user.setId(idUsers());
-            users.add(user);
-        } else {
-            throw new ValidationException(HttpStatus.BAD_REQUEST);
-        }
+        log.debug("Получен запрос на добавление пользователя");
+        validatorUser(user);
+        user.setId(idUsers());
+        users.add(user);
         return user;
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
-        for (User user1 : users) {
-            if (user1.getId() == user.getId()) {
-                users.remove(user1);
-                users.add(user);
+    public User update(@RequestBody User newUser) {
+        log.debug("Получен запрос на обновление пользователя");
+        for (User user : users) {
+            if (user.getId() == newUser.getId()) {
+                users.remove(user);
+                users.add(newUser);
             } else {
-                throw new ValidationException(HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ValidationException(HttpStatus.INTERNAL_SERVER_ERROR, "Такого пользователя нет");
             }
         }
-        return user;
+        return newUser;
     }
 }
