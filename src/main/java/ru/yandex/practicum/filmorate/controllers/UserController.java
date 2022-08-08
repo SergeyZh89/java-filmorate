@@ -15,9 +15,9 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private List<User> users = new ArrayList<>();
-    private int idUser;
+    private long idUser;
 
-    private int idUsers() {
+    private long idUsers() {
         return ++idUser;
     }
 
@@ -44,17 +44,17 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        log.debug("Получен запрос на добавление пользователя");
-        validatorUser(user);
-        user.setId(idUsers());
-        users.add(user);
-        return user;
+    public User createUser(@RequestBody User newUser) {
+        log.debug("Получен запрос на добавление пользователя: id " + newUser.getId());
+        validatorUser(newUser);
+        newUser.setId(idUsers());
+        users.add(newUser);
+        return newUser;
     }
 
     @PutMapping
     public User update(@RequestBody User newUser) {
-        log.debug("Получен запрос на обновление пользователя");
+        log.debug("Получен запрос на обновление пользователя: id " + newUser.getId());
         for (User user : users) {
             if (user.getId() == newUser.getId()) {
                 users.remove(user);

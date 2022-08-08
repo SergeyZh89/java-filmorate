@@ -15,7 +15,11 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
     private List<Film> films = new ArrayList<>();
-    private int idFilm;
+    private long idFilm;
+
+    private long idFilms() {
+        return ++idFilm;
+    }
 
     protected void validatorFilm(Film film) {
         if (film.getName().isBlank()) {
@@ -32,10 +36,6 @@ public class FilmController {
         }
     }
 
-    private int idFilms() {
-        return ++idFilm;
-    }
-
     @GetMapping
     public List<Film> getFilms() {
         log.debug("Получен запрос на список фильмов");
@@ -44,7 +44,7 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody Film newFilm) {
-        log.debug("Получен запрос на добавление фильма");
+        log.debug("Получен запрос на добавление фильма: id " + newFilm.getId());
         validatorFilm(newFilm);
         newFilm.setId(idFilms());
         films.add(newFilm);
