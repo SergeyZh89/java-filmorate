@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @Slf4j
@@ -35,16 +34,28 @@ public class UserController {
         return userStorage.getUsers();
     }
 
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable long id) {
+        log.debug("Получен запрос на список друзей пользователя: id " + id);
+        return userStorage.getFriends(id);
+    }
+
     @GetMapping("/{id}")
     public User getUser(@PathVariable long id) {
-        log.debug("Получен запрос на пользователя под номером: " + id);
+        log.debug("Получен запрос на пользователя под номером: id " + id);
         return userStorage.getUser(id);
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
-    public List<Long> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
-        log.debug("Получен запрос на список общих друзей пользователя под номером: " + id);
-        return userService.getCommonFriends(userStorage.getUser(id), userStorage.getUser(otherId));
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.debug("Получен запрос на список общих друзей пользователя: id " + id);
+        return userService.getCommonFriends(userStorage.getUser(id).getFriends(), userStorage.getUser(otherId).getFriends(), userStorage.getUsers());
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public List<Long> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.debug("Получен запрос на добавление в друзья пользователю: id " + id + " от пользователя: id " + friendId);
+        return userService.addFriend(userStorage.getUser(id), userStorage.getUser(friendId));
     }
 
     @PostMapping
@@ -59,25 +70,13 @@ public class UserController {
         log.debug("Получен запрос на обновление пользователя: id " + newUser.getId());
         if (newUser.getId() < 0) {
             throw new UserNotFoundException("Такого пользователя не существует");
-        } else return userStorage.updUser(newUser);
-    }
-
-    @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.debug("Получен запрос на добавление в друзья пользователю: id " + id + " от пользователя: " + friendId);
-        return userService.addFriend(userStorage.getUser(id), userStorage.getUser(friendId));
+        } else return userStorage.updateUser(newUser);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.debug("Получен запрос на удаление из друзей пользователя: id " + id + " от пользователя: " + friendId);
+    public List<Long> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.debug("Получен запрос на удаление из друзей пользователя: id " + id + " от пользователя: id " + friendId);
         return userService.deleteFriend(userStorage.getUser(id), userStorage.getUser(friendId));
-    }
-
-    @GetMapping("/{id}/friends")
-    public Set<Long> getFriends(@PathVariable long id) {
-        log.debug("Получен запрос на список друзей пользователя: " + id);
-        return userService.getFriends(userStorage.getUsers().stream().filter(user -> user.getId() == id).findFirst().get());
     }
 
     protected void validatorUser(User user) {

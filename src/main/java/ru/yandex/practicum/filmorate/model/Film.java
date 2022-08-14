@@ -17,15 +17,14 @@ public class Film {
     private String description;
     private int duration;
     private LocalDate releaseDate;
-    private Set<Long> userLikes;
+    private Set<Long> userLikes = new HashSet<>();
 
     public Film(long id, String name, String description, LocalDate releaseDate, int duration) {
         this.id = id;
-        this.name= name;
+        this.name = name;
         this.description = description;
         this.duration = duration;
         this.releaseDate = releaseDate;
-        this.userLikes = new HashSet<>();
     }
 }
 

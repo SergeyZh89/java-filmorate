@@ -5,37 +5,38 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class UserService {
-    public User addFriend(User newUser, User newUser2) {
-        newUser.getFriends().add(newUser2.getId());
-        newUser2.getFriends().add(newUser.getId());
-        return newUser;
+    public List<Long> addFriend(User user, User userOther) {
+        user.getFriends().add(userOther.getId());
+        userOther.getFriends().add(user.getId());
+        return user.getFriends();
     }
 
-    public User deleteFriend(User newUser, User newUser2) {
-        newUser.getFriends().remove(newUser2.getId());
-        newUser2.getFriends().remove(newUser.getId());
-        return newUser;
+    public List<Long> deleteFriend(User user, User userOther) {
+        user.getFriends().remove(userOther.getId());
+        userOther.getFriends().remove(user.getFriends());
+        return user.getFriends();
     }
 
-    public Set<Long> getFriends(User newUser) {
-        return newUser.getFriends();
-    }
-
-    public List<Long> getCommonFriends(User user, User otherUser){
-        List<Long> commonFriends = new ArrayList<>();
-        List<Long> user1 = new ArrayList<>(user.getFriends());
-        List<Long> user2 = new ArrayList<>(user.getFriends());
-        for (Long aLong : user1) {
-            for (Long aLong1 : user2) {
-                if (aLong == aLong1) {
-                    commonFriends.add(aLong1);
+    public List<User> getCommonFriends(List<Long> userList, List<Long> userListOther, List<User> list) {
+        List<Long> commonId = new ArrayList<>();
+        List<User> commonUsers = new ArrayList<>();
+        for (Long user : userList) {
+            for (Long userOther : userListOther) {
+                if (user == userOther) {
+                    commonId.add(userOther);
                 }
             }
         }
-        return commonFriends;
+        for (User user : list) {
+            for (Long aLong : commonId) {
+                if (user.getId() == aLong) {
+                    commonUsers.add(user);
+                }
+            }
+        }
+        return commonUsers;
     }
 }

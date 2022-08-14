@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -17,7 +17,7 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Set<Long> friends;
+    private List<Long> friends = new ArrayList<>();
 
     public User(long id, String email, String login, String name, LocalDate birthday) {
         this.id = id;
@@ -25,6 +25,5 @@ public class User {
         this.login = login;
         this.name = name;
         this.birthday = birthday;
-        this.friends = new HashSet<>();
     }
 }

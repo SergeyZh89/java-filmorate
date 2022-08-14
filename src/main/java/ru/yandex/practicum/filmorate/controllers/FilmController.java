@@ -18,12 +18,12 @@ import java.util.List;
 @RequestMapping("/films")
 @NoArgsConstructor
 public class FilmController {
-
     private FilmStorage filmStorage;
     private FilmService filmService;
 
     @Autowired
-    public FilmController(@Qualifier("inMemoryFilmStorage") FilmStorage filmStorage, @Qualifier("filmService") FilmService filmService) {
+    public FilmController(@Qualifier("inMemoryFilmStorage") FilmStorage filmStorage,
+                          @Qualifier("filmService") FilmService filmService) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;
     }
@@ -34,8 +34,14 @@ public class FilmController {
         return filmStorage.getFilms();
     }
 
-    @GetMapping("/popular?count={count}")
-    public List<Film> getPopularFilms(@RequestParam(required = false) int count) {
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable long id) {
+        log.debug("Получен запрос фильмов под номером: " + id);
+        return filmStorage.getFilm(id);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "0") int count) {
         log.debug("Получен запрос на список популярных фильмов");
         return filmStorage.getPopularFilms(count);
     }
@@ -49,18 +55,26 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@RequestBody Film newFilm) {
-        log.debug("Получен запрос на обновление фильма");
+        log.debug("Получен запрос на обновление фильма: id " + newFilm.getId());
         return filmStorage.updateFilm(newFilm);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film userLikeFilm(@PathVariable long id, @PathVariable long userId) {
-        return filmService.userLikeFilm(filmStorage.getFilm(id), userId);
+    public void userLikeFilm(@PathVariable long id, @PathVariable long userId) {
+        log.debug("Получен запрос на добавление лайка");
+        filmService.userLikeFilm(filmStorage.getFilm(id), userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film userDisLikeFilm(@PathVariable long id, @PathVariable long userId) {
+        log.debug("Получен запрос на удаление лайка");
         return filmService.userDisLikeFilm(filmStorage.getFilm(id), userId);
+    }
+
+    @DeleteMapping("{id}")
+    public void deleteFilm(@PathVariable long id) {
+        log.debug("Получен запрос на удаление фильма: id " + id);
+        filmStorage.deleteFilm(id);
     }
 
     protected void validatorFilm(Film film) {

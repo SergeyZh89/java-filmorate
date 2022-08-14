@@ -5,11 +5,13 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private List<User> users = new ArrayList<>();
+    private Map<Long, User> users = new HashMap();
     private long idUser;
 
     private long idUsers() {
@@ -18,13 +20,26 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        return users;
+        return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public List<User> getFriends(long id) {
+        List<User> userList = new ArrayList<>();
+        if (users.containsKey(id)) {
+            for (Long value : users.get(id).getFriends()) {
+                userList.add(users.get(value));
+            }
+            return userList;
+        } else {
+            throw new UserNotFoundException("Такого пользователя не существует");
+        }
     }
 
     @Override
     public User getUser(long id) {
-        if(users.stream().filter(user -> user.getId() == id).findFirst().isPresent()){
-            return users.stream().filter(user -> user.getId() == id).findFirst().get();
+        if (users.containsKey(id)) {
+            return users.get(id);
         } else {
             throw new UserNotFoundException("Такого пользователя не существует");
         }
@@ -33,18 +48,18 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User addUser(User newUser) {
         newUser.setId(idUsers());
-        users.add(newUser);
+        users.put(newUser.getId(), newUser);
         return newUser;
     }
 
     @Override
-    public User updUser(User newUser) {
-            for (User user : users) {
-                if (user.getId() == newUser.getId()) {
-                    users.remove(user);
-                    users.add(newUser);
-                } else throw new UserNotFoundException("Такого пользователя не существует");
-            }
+    public User updateUser(User newUser) {
+        if (users.containsKey(newUser.getId())) {
+            users.remove(newUser.getId());
+            users.put(newUser.getId(), newUser);
             return newUser;
+        } else {
+            throw new UserNotFoundException("Такого пользователя не существует");
+        }
     }
 }
