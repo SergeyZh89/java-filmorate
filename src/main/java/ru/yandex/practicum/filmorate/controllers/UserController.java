@@ -46,7 +46,8 @@ public class UserController {
     @GetMapping("{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         log.debug("Получен запрос на список общих друзей пользователя: id " + id + " с пользователем: id " + otherId);
-        return userService.getCommonFriends(userService.getUser(id).getFriends(), userService.getUser(otherId).getFriends());
+//        return userService.getCommonFriends(userService.getUser(id).getFriends(), userService.getUser(otherId).getFriends());
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

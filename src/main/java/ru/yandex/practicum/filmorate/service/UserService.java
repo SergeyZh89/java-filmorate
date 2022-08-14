@@ -2,13 +2,11 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class UserService implements UserStorage {
@@ -32,13 +30,11 @@ public class UserService implements UserStorage {
         return user.getFriends();
     }
 
-    public List<User> getCommonFriends(List<Long> userList, List<Long> userListOther) {
+    public List<User> getCommonFriends(long id, long otherId) {
         List<User> commonUsers = new ArrayList<>();
-        if (!userList.isEmpty() && !userListOther.isEmpty()) {
-            userList.stream()
-                    .filter(x -> x == userListOther.stream().findAny().get())
-                    .forEach(x -> commonUsers.add(getUser(x)));
-        }
+        getUser(id).getFriends().stream()
+                .filter(getUser(otherId).getFriends()::contains)
+                .forEach(n -> commonUsers.add(getUser(n)));
         return commonUsers;
     }
 
