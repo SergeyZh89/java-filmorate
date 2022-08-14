@@ -3,12 +3,10 @@ package ru.yandex.practicum.filmorate.controllers;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,63 +16,61 @@ import java.util.List;
 @RequestMapping("/films")
 @NoArgsConstructor
 public class FilmController {
-    private FilmStorage filmStorage;
+
     private FilmService filmService;
 
     @Autowired
-    public FilmController(@Qualifier("inMemoryFilmStorage") FilmStorage filmStorage,
-                          @Qualifier("filmService") FilmService filmService) {
-        this.filmStorage = filmStorage;
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
     @GetMapping
     public List<Film> getFilms() {
         log.debug("Получен запрос на список фильмов");
-        return filmStorage.getFilms();
+        return filmService.getFilms();
     }
 
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable long id) {
         log.debug("Получен запрос фильмов под номером: " + id);
-        return filmStorage.getFilm(id);
+        return filmService.getFilm(id);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "0") int count) {
+    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
         log.debug("Получен запрос на список популярных фильмов");
-        return filmStorage.getPopularFilms(count);
+        return filmService.getPopularFilms(count);
     }
 
     @PostMapping
     public Film createFilm(@RequestBody Film newFilm) {
         log.debug("Получен запрос на добавление фильма: id " + newFilm.getId());
         validatorFilm(newFilm);
-        return filmStorage.createFilm(newFilm);
+        return filmService.createFilm(newFilm);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film newFilm) {
         log.debug("Получен запрос на обновление фильма: id " + newFilm.getId());
-        return filmStorage.updateFilm(newFilm);
+        return filmService.updateFilm(newFilm);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void userLikeFilm(@PathVariable long id, @PathVariable long userId) {
-        log.debug("Получен запрос на добавление лайка");
-        filmService.userLikeFilm(filmStorage.getFilm(id), userId);
+        log.debug("Получен запрос на добавление лайка фильму: id" + id + " от пользователя: id " + userId);
+        filmService.userLikeFilm(filmService.getFilm(id), userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film userDisLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на удаление лайка");
-        return filmService.userDisLikeFilm(filmStorage.getFilm(id), userId);
+        return filmService.userDisLikeFilm(filmService.getFilm(id), userId);
     }
 
     @DeleteMapping("{id}")
     public void deleteFilm(@PathVariable long id) {
         log.debug("Получен запрос на удаление фильма: id " + id);
-        filmStorage.deleteFilm(id);
+        filmService.deleteFilm(id);
     }
 
     protected void validatorFilm(Film film) {

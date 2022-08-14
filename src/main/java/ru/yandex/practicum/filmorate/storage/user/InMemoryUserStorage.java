@@ -11,6 +11,7 @@ import java.util.Map;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
+
     private Map<Long, User> users = new HashMap();
     private long idUser;
 
@@ -26,14 +27,13 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<User> getFriends(long id) {
         List<User> userList = new ArrayList<>();
-        if (users.containsKey(id)) {
-            for (Long value : users.get(id).getFriends()) {
-                userList.add(users.get(value));
-            }
-            return userList;
-        } else {
-            throw new UserNotFoundException("Такого пользователя не существует");
-        }
+        users.values().stream()
+                .filter(x -> x.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("Такого пользователя не существует"))
+                .getFriends()
+                .forEach(x -> userList.add(users.get(x)));
+        return userList;
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.List;
 
 @Component
 public interface UserStorage {
+
     List<User> getUsers();
 
     User getUser(long id);

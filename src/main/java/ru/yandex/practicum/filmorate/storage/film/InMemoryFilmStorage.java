@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
+
     private Map<Long, Film> films = new HashMap<>();
     private long idFilm;
 
@@ -33,19 +34,10 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        List<Film> topFilms = new ArrayList<>();
-        if (count == 0) {
-            return films.values().stream()
-                    .sorted(new FilmCompatator())
-                    .limit(10)
-                    .collect(Collectors.toList());
-
-        } else {
             return films.values().stream()
                     .sorted(new FilmCompatator())
                     .limit(count)
                     .collect(Collectors.toList());
-        }
     }
 
     class FilmCompatator implements Comparator<Film> {

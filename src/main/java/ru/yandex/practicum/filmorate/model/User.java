@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
+
     private long id;
     private String email;
     private String login;

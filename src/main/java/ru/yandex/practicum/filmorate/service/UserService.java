@@ -1,13 +1,25 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
-public class UserService {
+public class UserService implements UserStorage {
+
+    private UserStorage userStorage;
+
+    @Autowired
+    public UserService(UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
     public List<Long> addFriend(User user, User userOther) {
         user.getFriends().add(userOther.getId());
         userOther.getFriends().add(user.getId());
@@ -16,27 +28,42 @@ public class UserService {
 
     public List<Long> deleteFriend(User user, User userOther) {
         user.getFriends().remove(userOther.getId());
-        userOther.getFriends().remove(user.getFriends());
+        userOther.getFriends().remove(user.getId());
         return user.getFriends();
     }
 
-    public List<User> getCommonFriends(List<Long> userList, List<Long> userListOther, List<User> list) {
-        List<Long> commonId = new ArrayList<>();
+    public List<User> getCommonFriends(List<Long> userList, List<Long> userListOther) {
         List<User> commonUsers = new ArrayList<>();
-        for (Long user : userList) {
-            for (Long userOther : userListOther) {
-                if (user == userOther) {
-                    commonId.add(userOther);
-                }
-            }
-        }
-        for (User user : list) {
-            for (Long aLong : commonId) {
-                if (user.getId() == aLong) {
-                    commonUsers.add(user);
-                }
-            }
+        if (!userList.isEmpty() && !userListOther.isEmpty()) {
+            userList.stream()
+                    .filter(x -> x == userListOther.stream().findAny().get())
+                    .forEach(x -> commonUsers.add(getUser(x)));
         }
         return commonUsers;
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
+    @Override
+    public User getUser(long id) {
+        return userStorage.getUser(id);
+    }
+
+    @Override
+    public User addUser(User newUser) {
+        return userStorage.addUser(newUser);
+    }
+
+    @Override
+    public User updateUser(User newUser) {
+        return userStorage.updateUser(newUser);
+    }
+
+    @Override
+    public List<User> getFriends(long id) {
+        return userStorage.getFriends(id);
     }
 }
