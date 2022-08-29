@@ -1,3 +1,3 @@
 # java-filmorate
 Template repository for Filmorate project.
-1
+![SQL](/../main/src/main/resources/images/drawSQL-filmorate.png)
