@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controllers;
+package ru.yandex.practicum.filmorate.model.controllers;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,12 +65,6 @@ public class FilmController {
     public Film userDisLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на удаление лайка");
         return filmService.userDisLikeFilm(filmService.getFilm(id), userId);
-    }
-
-    @DeleteMapping("{id}")
-    public void deleteFilm(@PathVariable long id) {
-        log.debug("Получен запрос на удаление фильма: id " + id);
-        filmService.deleteFilm(id);
     }
 
     protected void validatorFilm(Film film) {

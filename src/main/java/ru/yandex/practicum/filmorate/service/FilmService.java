@@ -2,62 +2,68 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.impl.FilmDaoImpl;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.List;
 
 @Service
-public class FilmService implements FilmStorage {
-
-    private FilmStorage filmStorage;
+public class FilmService implements FilmDao {
+    private final FilmDaoImpl filmDao;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public FilmService(FilmDaoImpl filmDao) {
+        this.filmDao = filmDao;
     }
 
+    @Override
     public void userLikeFilm(Film film, long id) {
-        film.getUserLikes().add(id);
+        filmDao.userLikeFilm(film, id);
     }
 
+    @Override
     public Film userDisLikeFilm(Film film, long id) {
-        if (film.getUserLikes().contains(id)) {
-            film.getUserLikes().remove(id);
-            return film;
-        } else {
+        if (id <= 0) {
             throw new UserNotFoundException("Такого пользоватаеля не существует");
         }
+        return filmDao.userDisLikeFilm(film, id);
     }
 
     @Override
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmDao.getFilms();
     }
 
     @Override
     public Film createFilm(Film film) {
-        return filmStorage.createFilm(film);
+        if (film.getMpa() == null) {
+            throw new ValidationException("Требуется указать рейтинг фильма");
+        }
+        return filmDao.createFilm(film);
     }
 
     @Override
     public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        if (film.getId() <= 0) {
+            throw new FilmNotFoundException("Такого фильма не существует");
+        }
+        return filmDao.updateFilm(film);
     }
 
     @Override
     public Film getFilm(long id) {
-        return filmStorage.getFilm(id);
+        if (id <= 0) {
+            throw new FilmNotFoundException("Такого фильма не существует");
+        }
+        return filmDao.getFilm(id);
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        return filmStorage.getPopularFilms(count);
-    }
-
-    @Override
-    public void deleteFilm(long id) {
-        filmStorage.deleteFilm(id);
+        return filmDao.getPopularFilms(count);
     }
 }

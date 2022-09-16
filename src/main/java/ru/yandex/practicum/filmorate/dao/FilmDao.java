@@ -1,12 +1,10 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.dao;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-@Component
-public interface FilmStorage {
 
+public interface FilmDao {
     List<Film> getFilms();
 
     Film createFilm(Film film);
@@ -17,5 +15,7 @@ public interface FilmStorage {
 
     List<Film> getPopularFilms(int count);
 
-    void deleteFilm(long id);
+    void userLikeFilm(Film film, long id);
+
+    Film userDisLikeFilm(Film film, long id);
 }
