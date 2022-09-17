@@ -1,5 +1,5 @@
 # java-filmorate
-![SQL](/../main/src/main/resources/images/drawSQL2.png)
+![SQL](https://github.com/SergeyZh89/java-filmorate/blob/add-database/src/main/resources/images/drawSQL2.png)
 
 ### Примеры запросов:
 
