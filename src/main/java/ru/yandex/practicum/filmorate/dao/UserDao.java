@@ -4,14 +4,15 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public interface UserDao {
     List<User> getUsers();
 
-    User getUser(long id);
+    Optional<User> getUser(long id);
 
-    User addUser(User newUser);
+    Optional<User> addUser(User newUser);
 
     User updateUser(User newUser);
 

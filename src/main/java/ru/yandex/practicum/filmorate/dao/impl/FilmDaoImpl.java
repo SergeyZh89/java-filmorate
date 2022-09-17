@@ -35,7 +35,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getFilms() {
-        String sql = "SELECT * FROM FILMS"; 
+        String sql = "SELECT * FROM FILMS";
         return jdbcTemplate.query(sql, new FilmMapper(jdbcTemplate, ratingMpaDao));
     }
 

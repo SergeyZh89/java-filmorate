@@ -11,7 +11,9 @@ import ru.yandex.practicum.filmorate.model.RatingMpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class FilmMapper implements RowMapper<Film> {
@@ -37,9 +39,12 @@ public class FilmMapper implements RowMapper<Film> {
             ratingMpa = ratingMpaDao.getRatingsById(rs.getInt("mpa"));
             film.setMpa(ratingMpa);
         }
-        String sql = "SELECT G.NAME, G.ID FROM GENRES AS G JOIN FILM_GENRE AS FG ON G.ID = FG.GENRE_ID WHERE FILM_ID=?";
-        List<Genre> genreList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Genre.class), film.getId());
+        String sqlGenre = "SELECT G.NAME, G.ID FROM GENRES AS G JOIN FILM_GENRE AS FG ON G.ID = FG.GENRE_ID WHERE FILM_ID=?";
+        List<Genre> genreList = jdbcTemplate.query(sqlGenre, new BeanPropertyRowMapper<>(Genre.class), film.getId());
         film.setGenres(genreList);
+        String sqlLikes = "SELECT USER_ID FROM FILM_LIKES";
+        List<Long> filmLikes = jdbcTemplate.queryForList(sqlLikes, Long.TYPE);
+        film.setUserLikes(filmLikes);
         return film;
     }
 }

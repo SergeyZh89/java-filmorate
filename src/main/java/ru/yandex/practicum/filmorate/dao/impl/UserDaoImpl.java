@@ -13,6 +13,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -69,7 +70,7 @@ public class UserDaoImpl implements UserDao {
             return list;
         }, otherId);
         commonList = friendListUser.stream().filter(friendListOtherUser::contains).collect(Collectors.toList());
-        commonList.forEach(x -> userList.add(getUser(x)));
+        commonList.forEach(x -> userList.add(getUser(x).get()));
         return userList;
     }
 
@@ -86,15 +87,14 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUser(long id) {
+    public Optional<User> getUser(long id) {
         return jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?", new BeanPropertyRowMapper<>(User.class), id)
                 .stream()
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     @Override
-    public User addUser(User newUser) {
+    public Optional<User> addUser(User newUser) {
         String sql = "insert into USERS (name, email, login, birthday) values (?, ?, ?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -119,6 +119,6 @@ public class UserDaoImpl implements UserDao {
                 newUser.getEmail(),
                 newUser.getBirthday(),
                 newUser.getId());
-        return getUser(newUser.getId());
+        return newUser;
     }
 }

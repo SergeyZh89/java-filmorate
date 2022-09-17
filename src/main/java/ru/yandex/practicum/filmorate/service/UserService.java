@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService implements UserDao {
@@ -39,7 +40,7 @@ public class UserService implements UserDao {
     }
 
     @Override
-    public User getUser(long id) {
+    public Optional<User> getUser(long id) {
         if (id <= 0) {
             throw new UserNotFoundException("Такого пользователя не существует");
         }
@@ -47,7 +48,7 @@ public class UserService implements UserDao {
     }
 
     @Override
-    public User addUser(User newUser) {
+    public Optional<User> addUser(User newUser) {
         return userDao.addUser(newUser);
     }
 

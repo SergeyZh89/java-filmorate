@@ -21,6 +21,6 @@ public class Film {
     private int duration;
     private RatingMpa mpa;
     private List<Genre> genres = new ArrayList<>();
-    private Set<Long> userLikes = new HashSet<>();
+    private List<Long> userLikes = new ArrayList<>();
 }
 
