@@ -66,4 +66,9 @@ public class FilmService implements FilmDao {
     public List<Film> getPopularFilms(int count) {
         return filmDao.getPopularFilms(count);
     }
+
+    @Override
+    public void deleteFilm(long id) {
+        filmDao.deleteFilm(id);
+    }
 }

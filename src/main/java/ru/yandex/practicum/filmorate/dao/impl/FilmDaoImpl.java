@@ -2,17 +2,23 @@ package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,24 +31,68 @@ import static java.util.stream.Collectors.toCollection;
 @Component
 public class FilmDaoImpl implements FilmDao {
     private final JdbcTemplate jdbcTemplate;
-    private final RatingMpaDaoImpl ratingMpaDao;
 
     @Autowired
-    public FilmDaoImpl(JdbcTemplate jdbcTemplate, RatingMpaDaoImpl ratingMpaDao) {
+    public FilmDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.ratingMpaDao = ratingMpaDao;
+    }
+
+    private List<Genre> genreMapper(int id) {
+        String sql = "SELECT G.NAME, G.ID FROM GENRES AS G JOIN FILM_GENRE AS FG ON G.ID = FG.GENRE_ID WHERE FILM_ID=?";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Genre.class), id);
+    }
+
+    private List<Long> userLikesMapper(int id) {
+        String sql = "SELECT USER_ID FROM FILM_LIKES WHERE FILM_ID=?";
+        return jdbcTemplate.queryForList(sql, Long.TYPE, id);
+    }
+
+    private RatingMpa ratingMpaMapper(int id) {
+        String sql = "SELECT * FROM MPA_RATINGS WHERE ID=?";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(RatingMpa.class), id).stream()
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
     public List<Film> getFilms() {
-        String sql = "SELECT * FROM FILMS";
-        return jdbcTemplate.query(sql, new FilmMapper(jdbcTemplate, ratingMpaDao));
+        String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME " +
+                "FROM FILMS AS F " +
+                "JOIN MPA_RATINGS AS MA ON F.MPA = MA.ID";
+        return jdbcTemplate.query(sql, rs -> {
+            List<Film> filmList = new ArrayList<>();
+            while (rs.next()) {
+                Film film = new Film().toBuilder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .description(rs.getString("description"))
+                        .duration(rs.getInt("duration"))
+                        .releaseDate(rs.getDate("release_date").toLocalDate())
+                        .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                        .genres(genreMapper(rs.getInt("id")))
+                        .userLikes(userLikesMapper(rs.getInt("id")))
+                        .build();
+                filmList.add(film);
+            }
+            return filmList;
+        });
+
     }
 
     @Override
     public Film getFilm(long id) {
-        String sql = "SELECT * FROM FILMS WHERE ID=?";
-        return jdbcTemplate.queryForObject(sql, new FilmMapper(jdbcTemplate, ratingMpaDao), id);
+        String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME FROM FILMS AS F " +
+                "JOIN MPA_RATINGS AS MA ON F.MPA = MA.ID where F.ID = ?";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new Film().toBuilder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .duration(rs.getInt("duration"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                .genres(genreMapper(rs.getInt("id")))
+                .userLikes(userLikesMapper(rs.getInt("id")))
+                .build(), id);
     }
 
     @Override
@@ -53,7 +103,23 @@ public class FilmDaoImpl implements FilmDao {
                 "ORDER BY COUNT(FL.FILM_ID) " +
                 "DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sql, new FilmMapper(jdbcTemplate, ratingMpaDao), count);
+        return jdbcTemplate.query(sql, rs -> {
+            List<Film> filmList = new ArrayList<>();
+            while (rs.next()) {
+                Film film = new Film().toBuilder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .description(rs.getString("description"))
+                        .duration(rs.getInt("duration"))
+                        .releaseDate(rs.getDate("release_date").toLocalDate())
+                        .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                        .genres(genreMapper(rs.getInt("id")))
+                        .userLikes(userLikesMapper(rs.getInt("id")))
+                        .build();
+                filmList.add(film);
+            }
+            return filmList;
+        }, count);
     }
 
     @Override
@@ -77,10 +143,11 @@ public class FilmDaoImpl implements FilmDao {
         Number key = keyHolder.getKey();
         assert key != null;
         newFilm.setId(key.longValue());
-        if (!newFilm.getGenres().isEmpty()) {
+        if (newFilm.getGenres() != null) {
             newFilm.getGenres()
                     .forEach(x -> jdbcTemplate.update("INSERT INTO FILM_GENRE VALUES (?,?)", newFilm.getId(), x.getId()));
         }
+
         return getFilm(newFilm.getId());
     }
 
@@ -117,6 +184,12 @@ public class FilmDaoImpl implements FilmDao {
         String sql = "DELETE FROM FILM_LIKES WHERE FILM_ID=? AND USER_ID=?";
         jdbcTemplate.update(sql, film.getId(), id);
         return getFilm(film.getId());
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+        String sql = "DELETE FROM FILMS WHERE id=?";
+        jdbcTemplate.update(sql, id);
     }
 }
 

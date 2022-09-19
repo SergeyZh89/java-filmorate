@@ -31,7 +31,7 @@ public class GenresController {
     }
 
     @GetMapping("/{id}")
-    public Genre genre(@PathVariable int id){
+    public Genre genre(@PathVariable int id) {
         log.debug("Получен запрос на жанр c id = " + id);
         return genreService.getGenresById(id);
     }

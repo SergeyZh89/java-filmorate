@@ -67,6 +67,12 @@ public class FilmController {
         return filmService.userDisLikeFilm(filmService.getFilm(id), userId);
     }
 
+    @DeleteMapping("{id}")
+    public void deleteFilm(@PathVariable long id) {
+        log.debug("Получен запрос на удаление фильма: id " + id);
+        filmService.deleteFilm(id);
+    }
+
     protected void validatorFilm(Film film) {
         if (film.getName().isBlank()) {
             throw new ValidationException("Имя не должно быть пустым");

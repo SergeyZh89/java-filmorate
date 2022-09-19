@@ -18,4 +18,6 @@ public interface FilmDao {
     void userLikeFilm(Film film, long id);
 
     Film userDisLikeFilm(Film film, long id);
+
+    void deleteFilm(long id);
 }
