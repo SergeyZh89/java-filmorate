@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controllers;
+package ru.yandex.practicum.filmorate.model.controllers;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +11,13 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j
 @NoArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-
     private UserService userService;
 
     @Autowired
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable long id) {
+    public Optional<User> getUser(@PathVariable long id) {
         log.debug("Получен запрос на пользователя под номером: id " + id);
         return userService.getUser(id);
     }
@@ -46,18 +46,17 @@ public class UserController {
     @GetMapping("{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         log.debug("Получен запрос на список общих друзей пользователя: id " + id + " с пользователем: id " + otherId);
-//        return userService.getCommonFriends(userService.getUser(id).getFriends(), userService.getUser(otherId).getFriends());
         return userService.getCommonFriends(id, otherId);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     public List<Long> addFriend(@PathVariable long id, @PathVariable long friendId) {
         log.debug("Получен запрос на добавление в друзья пользователю: id " + id + " от пользователя: id " + friendId);
-        return userService.addFriend(userService.getUser(id), userService.getUser(friendId));
+        return userService.addFriend(userService.getUser(id).get(), userService.getUser(friendId).get());
     }
 
     @PostMapping
-    public User createUser(@RequestBody User newUser) {
+    public Optional<User> createUser(@RequestBody User newUser) {
         log.debug("Получен запрос на добавление пользователя: id " + newUser.getId());
         validatorUser(newUser);
         return userService.addUser(newUser);
@@ -74,7 +73,7 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public List<Long> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         log.debug("Получен запрос на удаление из друзей пользователя: id " + id + " от пользователя: id " + friendId);
-        return userService.deleteFriend(userService.getUser(id), userService.getUser(friendId));
+        return userService.deleteFriend(userService.getUser(id).get(), userService.getUser(friendId).get());
     }
 
     protected void validatorUser(User user) {

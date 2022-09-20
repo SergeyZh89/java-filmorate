@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controllers;
+package ru.yandex.practicum.filmorate.model.controllers;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
