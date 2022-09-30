@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -34,6 +35,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public List<User> getFriends(long id) {
         String sql = "SELECT * FROM USERS WHERE ID IN (SELECT FRIENDS_ID FROM USER_FRIENDS WHERE USER_ID=?)";
+        getUser(id);
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class), id);
     }
 
@@ -88,9 +90,10 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> getUser(long id) {
-        return jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?", new BeanPropertyRowMapper<>(User.class), id)
+        return Optional.ofNullable(jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?", new BeanPropertyRowMapper<>(User.class), id)
                 .stream()
-                .findFirst();
+                .findAny()
+                .orElseThrow(() -> new UserNotFoundException("Такого пользователя не существует")));
     }
 
     @Override

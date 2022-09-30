@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -31,7 +32,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilm(@PathVariable long id) {
+    public Optional<Film> getFilm(@PathVariable long id) {
         log.debug("Получен запрос фильмов под номером: " + id);
         return filmService.getFilm(id);
     }
@@ -58,13 +59,13 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void userLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на добавление лайка фильму: id" + id + " от пользователя: id " + userId);
-        filmService.userLikeFilm(filmService.getFilm(id), userId);
+        filmService.userLikeFilm(filmService.getFilm(id).get(), userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film userDisLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на удаление лайка");
-        return filmService.userDisLikeFilm(filmService.getFilm(id), userId);
+        return filmService.userDisLikeFilm(filmService.getFilm(id).get(), userId);
     }
 
     @DeleteMapping("{id}")
