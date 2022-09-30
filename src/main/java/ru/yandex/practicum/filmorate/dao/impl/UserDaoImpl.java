@@ -121,4 +121,10 @@ public class UserDaoImpl implements UserDao {
                 newUser.getId());
         return newUser;
     }
+
+    @Override
+    public void deleteUser(long id) {
+        String sql = "DELETE FROM USERS WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
 }

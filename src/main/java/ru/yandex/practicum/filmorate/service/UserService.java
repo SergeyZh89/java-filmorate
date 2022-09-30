@@ -31,7 +31,7 @@ public class UserService implements UserDao {
 
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
-       return userDao.getCommonFriends(id, otherId);
+        return userDao.getCommonFriends(id, otherId);
     }
 
     @Override
@@ -63,5 +63,13 @@ public class UserService implements UserDao {
     @Override
     public List<User> getFriends(long id) {
         return userDao.getFriends(id);
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        if (id <= 0) {
+            throw new UserNotFoundException("Tакого пользователя не существует");
+        }
+        userDao.deleteUser(id);
     }
 }
