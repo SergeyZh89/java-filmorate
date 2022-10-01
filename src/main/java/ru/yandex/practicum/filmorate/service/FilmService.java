@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FilmService implements FilmDao {
@@ -55,7 +56,7 @@ public class FilmService implements FilmDao {
     }
 
     @Override
-    public Film getFilm(long id) {
+    public Optional<Film> getFilm(long id) {
         if (id <= 0) {
             throw new FilmNotFoundException("Такого фильма не существует");
         }

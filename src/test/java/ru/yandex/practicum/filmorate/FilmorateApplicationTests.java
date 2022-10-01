@@ -214,7 +214,7 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        assertThat(filmService.getFilm(1).getName()).isEqualTo("Film");
+        assertThat(filmService.getFilm(1).get().getName()).isEqualTo("Film");
     }
 
     @Test
@@ -245,7 +245,7 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        assertThat(filmService.getFilm(1).getName()).isEqualTo("Film");
+        assertThat(filmService.getFilm(1).get().getName()).isEqualTo("Film");
     }
 
     @Test
@@ -259,7 +259,7 @@ class FilmorateApplicationTests {
         filmService.createFilm(film);
         film.setName("OtherFilm");
         filmService.updateFilm(film);
-        assertThat(filmService.getFilm(1).getName()).isEqualTo("OtherFilm");
+        assertThat(filmService.getFilm(1).get().getName()).isEqualTo("OtherFilm");
     }
 
     @Test
@@ -278,8 +278,8 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        filmService.userLikeFilm(filmService.getFilm(1), 1);
-        assertThat(filmService.getFilm(1).getUserLikes()).hasSize(1);
+        filmService.userLikeFilm(filmService.getFilm(1).get(), 1);
+        assertThat(filmService.getFilm(1).get().getUserLikes()).hasSize(1);
     }
 
     @Test
@@ -298,9 +298,9 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        filmService.userLikeFilm(filmService.getFilm(1), 1);
-        filmService.userDisLikeFilm(filmService.getFilm(1), 1);
-        assertThat(filmService.getFilm(1).getUserLikes()).isEmpty();
+        filmService.userLikeFilm(filmService.getFilm(1).get(), 1);
+        filmService.userDisLikeFilm(filmService.getFilm(1).get(), 1);
+        assertThat(filmService.getFilm(1).get().getUserLikes()).isEmpty();
     }
 
     @Test
@@ -341,7 +341,7 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        assertThat(filmService.getFilm(1).getName()).isEqualTo("Film");
+        assertThat(filmService.getFilm(1).get().getName()).isEqualTo("Film");
         assertThat(filmService.getFilms()).hasSize(1);
         filmService.deleteFilm(1);
         assertThat(filmService.getFilms()).isEmpty();

@@ -76,6 +76,12 @@ public class UserController {
         return userService.deleteFriend(userService.getUser(id).get(), userService.getUser(friendId).get());
     }
 
+    @DeleteMapping("{userId}")
+    public void deleteUser (@PathVariable long userId){
+        log.debug("Получен запрос на удаление пользователя " + userId);
+        userService.deleteUser(userId);
+    }
+
     protected void validatorUser(User user) {
         if (user.getEmail().isBlank()) {
             throw new ValidationException("Имя не должно быть пустым");
