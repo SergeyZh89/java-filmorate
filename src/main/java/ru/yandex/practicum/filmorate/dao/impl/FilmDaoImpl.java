@@ -117,6 +117,35 @@ public class FilmDaoImpl implements FilmDao {
         }, count);
     }
 
+    public List <Film> getCommonFilms(long userId, long friendId){
+        String sql = "SELECT F.* FROM FILMS AS F " +
+                "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
+                "LEFT JOIN USERS U ON FL.USER_ID = U.ID " +
+                "WHERE USER_ID = ?" +
+                "INTERSECT " +
+                "SELECT F.* FROM FILMS AS F " +
+                "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
+                "LEFT JOIN USERS U ON FL.USER_ID = U.ID " +
+                "WHERE USER_ID = ? ";
+        return jdbcTemplate.query(sql, rs -> {
+            List<Film> filmList = new ArrayList<>();
+            while (rs.next()) {
+                Film film = new Film().toBuilder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .description(rs.getString("description"))
+                        .duration(rs.getInt("duration"))
+                        .releaseDate(rs.getDate("release_date").toLocalDate())
+                        .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                        .genres(genreMapper(rs.getInt("id")))
+                        .userLikes(userLikesMapper(rs.getInt("id")))
+                        .build();
+                filmList.add(film);
+            }
+            return filmList;
+        }, userId, friendId);
+    }
+
     @Override
     public Film createFilm(Film newFilm) {
         String sql = "INSERT INTO FILMS (name, description, duration, release_date, mpa) VALUES (?,?,?,?,?)";
