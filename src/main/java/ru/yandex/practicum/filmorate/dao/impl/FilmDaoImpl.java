@@ -15,6 +15,8 @@ import ru.yandex.practicum.filmorate.model.RatingMpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 import static java.util.stream.Collectors.collectingAndThen;
@@ -90,34 +92,84 @@ public class FilmDaoImpl implements FilmDao {
                 .orElseThrow(() -> new FilmNotFoundException("Такого фильма не существует")));
     }
 
-    @Override
-    public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT F.* FROM FILMS AS F " +
-                "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
-                "GROUP BY F.ID " +
-                "ORDER BY COUNT(FL.FILM_ID) " +
-                "DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sql, rs -> {
-            List<Film> filmList = new ArrayList<>();
-            while (rs.next()) {
-                Film film = new Film().toBuilder()
-                        .id(rs.getInt("id"))
-                        .name(rs.getString("name"))
-                        .description(rs.getString("description"))
-                        .duration(rs.getInt("duration"))
-                        .releaseDate(rs.getDate("release_date").toLocalDate())
-                        .mpa(ratingMpaMapper(rs.getInt("MPA")))
-                        .genres(genreMapper(rs.getInt("id")))
-                        .userLikes(userLikesMapper(rs.getInt("id")))
-                        .build();
-                filmList.add(film);
-            }
-            return filmList;
-        }, count);
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        if (genreId == null & year == null) {
+            String sql = "SELECT F.* FROM FILMS AS F " +
+                    "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
+                    "GROUP BY F.ID " +
+                    "ORDER BY COUNT(FL.FILM_ID) " +
+                    "DESC " +
+                    "LIMIT ?";
+            return jdbcTemplate.query(sql, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = mapRowToFilm(rs);
+                    filmList.add(film);
+                }
+                return filmList;
+            }, count);
+        }
+
+        if (year != null && genreId != null) {
+            final String sql_s_genre_year = "SELECT * FROM FILMS AS f " +
+                    "LEFT OUTER JOIN (SELECT FILM_ID, COUNT (*) likes_count FROM FILM_LIKES GROUP BY FILM_ID) " +
+                    "AS l ON f.ID = l.FILM_ID " +
+                    "LEFT OUTER JOIN MPA_RATINGS AS mpa ON f.MPA = mpa.ID " +
+                    "LEFT OUTER JOIN FILM_GENRE AS fg ON f.ID = fg.FILM_ID " +
+                    "WHERE fg.GENRE_ID = ? AND EXTRACT (YEAR FROM f.RELEASE_DATE) = ? " +
+                    "ORDER BY l.likes_count DESC " +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sql_s_genre_year, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = mapRowToFilm(rs);
+                    filmList.add(film);
+                }
+                return filmList;
+            }, genreId, year, count);
+        }
+
+        if (year == null && genreId != null) {
+            final String sql_s_genre = "SELECT * FROM FILMS AS f " +
+                    "LEFT OUTER JOIN (SELECT FILM_ID, COUNT (*) likes_count FROM FILM_LIKES GROUP BY FILM_ID) " +
+                    "AS l ON f.ID = l.FILM_ID " +
+                    "LEFT OUTER JOIN MPA_RATINGS AS mpa ON f.MPA = mpa.ID " +
+                    "LEFT OUTER JOIN FILM_GENRE AS fg ON f.ID = fg.FILM_ID " +
+                    "WHERE fg.GENRE_ID = ? " +
+                    "ORDER BY l.likes_count DESC " +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sql_s_genre, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = mapRowToFilm(rs);
+                    filmList.add(film);
+                }
+                return filmList;
+            }, genreId, count);
+        }
+
+        if (year != null) {
+            final String sql_s_year = "SELECT * FROM FILMS AS f " +
+                    "LEFT OUTER JOIN (SELECT FILM_ID, COUNT (*) likes_count FROM FILM_LIKES GROUP BY FILM_ID) " +
+                    "AS l ON f.ID = l.FILM_ID " +
+                    "LEFT OUTER JOIN MPA_RATINGS AS mpa ON f.MPA = mpa.ID " +
+                    "WHERE EXTRACT (YEAR FROM f.release_date) = ? " +
+                    "ORDER BY l.likes_count DESC " +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sql_s_year, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = mapRowToFilm(rs);
+                    filmList.add(film);
+                }
+                return filmList;
+            }, year, count);
+        }
+
+        throw new FilmNotFoundException("Такого фильма не существует");
     }
 
-    public List <Film> getCommonFilms(long userId, long friendId){
+    public List<Film> getCommonFilms(long userId, long friendId) {
         String sql = "SELECT F.* FROM FILMS AS F " +
                 "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
                 "LEFT JOIN USERS U ON FL.USER_ID = U.ID " +
@@ -130,16 +182,7 @@ public class FilmDaoImpl implements FilmDao {
         return jdbcTemplate.query(sql, rs -> {
             List<Film> filmList = new ArrayList<>();
             while (rs.next()) {
-                Film film = new Film().toBuilder()
-                        .id(rs.getInt("id"))
-                        .name(rs.getString("name"))
-                        .description(rs.getString("description"))
-                        .duration(rs.getInt("duration"))
-                        .releaseDate(rs.getDate("release_date").toLocalDate())
-                        .mpa(ratingMpaMapper(rs.getInt("MPA")))
-                        .genres(genreMapper(rs.getInt("id")))
-                        .userLikes(userLikesMapper(rs.getInt("id")))
-                        .build();
+                Film film = mapRowToFilm(rs);
                 filmList.add(film);
             }
             return filmList;
@@ -214,6 +257,19 @@ public class FilmDaoImpl implements FilmDao {
     public void deleteFilm(long id) {
         String sql = "DELETE FROM FILMS WHERE id = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    private Film mapRowToFilm(ResultSet rs) throws SQLException {
+        return new Film().toBuilder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .duration(rs.getInt("duration"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                .genres(genreMapper(rs.getInt("id")))
+                .userLikes(userLikesMapper(rs.getInt("id")))
+                .build();
     }
 }
 

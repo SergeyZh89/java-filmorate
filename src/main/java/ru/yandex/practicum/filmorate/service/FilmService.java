@@ -64,8 +64,8 @@ public class FilmService implements FilmDao {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        return filmDao.getPopularFilms(count);
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        return filmDao.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> getCommonFilms(long userId, long friendId){
