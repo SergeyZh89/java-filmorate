@@ -123,7 +123,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     public List <Film> getCommonFilms(long userId, long friendId){
-        String sql = "SELECT F.* FROM FILMS AS F " +
+        String sql = "SELECT F.* FROM FILMS F " +
                 "LEFT JOIN FILM_LIKES FL ON F.ID = FL.FILM_ID " +
                 "LEFT JOIN USERS U ON FL.USER_ID = U.ID " +
                 "WHERE USER_ID = ? " +
