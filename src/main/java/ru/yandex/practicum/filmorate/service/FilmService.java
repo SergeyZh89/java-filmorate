@@ -38,6 +38,10 @@ public class FilmService implements FilmDao {
         return filmDao.getFilms();
     }
 
+    public List<Film> getCommonFilms(long userId, long friendId){
+        return filmDao.getCommonFilms(userId, friendId);
+    }
+
     @Override
     public Film createFilm(Film film) {
         if (film.getMpa() == null) {
