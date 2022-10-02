@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDaoImpl;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -20,7 +19,6 @@ public class FilmService {
     public FilmService(FilmDaoImpl filmDao) {
         this.filmDao = filmDao;
     }
-
 
     public void userLikeFilm(Film film, long id) {
         filmDao.userLikeFilm(film, id);
@@ -58,12 +56,16 @@ public class FilmService {
         return filmDao.getFilm(id);
     }
 
-    public List<Film> getPopularFilms(int count) {
-        return filmDao.getPopularFilms(count);
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        return filmDao.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> getCommonFilms(long userId, long friendId){
         return filmDao.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getFilmsDirector(int director_id, String sortBy){
+        return filmDao.sortFilmsDirector(director_id, sortBy);
     }
 
     public void deleteFilm(long id) {

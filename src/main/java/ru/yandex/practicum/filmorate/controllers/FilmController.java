@@ -38,15 +38,23 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
+    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") int count,
+                                      @RequestParam(required = false) Long genreId,
+                                      @RequestParam(required = false) Integer year) {
         log.debug("Получен запрос на список популярных фильмов");
-        return filmService.getPopularFilms(count);
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam long userId, long friendId){
         log.debug("Получен запрос на получение общих фильмов");
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirectorId(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.debug("Получен запрос на получение фильмов режиссёра");
+        return filmService.getFilmsDirector(directorId, sortBy);
     }
 
     @PostMapping
