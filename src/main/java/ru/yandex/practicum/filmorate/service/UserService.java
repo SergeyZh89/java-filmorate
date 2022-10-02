@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.impl.RecommendationsDaoImpl;
 import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -12,10 +15,12 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserDaoImpl userDao;
+    private final RecommendationsDaoImpl recommendationsDao;
 
     @Autowired
-    public UserService(UserDaoImpl userDao) {
+    public UserService(UserDaoImpl userDao, RecommendationsDaoImpl recommendationsDao) {
         this.userDao = userDao;
+        this.recommendationsDao = recommendationsDao;
     }
 
     public List<Long> addFriend(User user, User userOther) {
@@ -61,5 +66,9 @@ public class UserService {
             throw new UserNotFoundException("Tакого пользователя не существует");
         }
         userDao.deleteUser(id);
+    }
+
+    public List<Film> getRecommendationsByUser(long userId, int recCount){
+        return recommendationsDao.getRecommendationsByUser(userId, recCount);
     }
 }

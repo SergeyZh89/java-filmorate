@@ -22,5 +22,11 @@ public interface FilmDao {
 
     void deleteFilm(long id);
 
+    RatingMpa ratingMpaMapper(int id);
+
+    List<Genre> genreMapper(int id);
+
+    List<Long> userLikesMapper(int id);
+
     List<Film> getPopularFilmsBySearch(String query, List<String> by);
 }
