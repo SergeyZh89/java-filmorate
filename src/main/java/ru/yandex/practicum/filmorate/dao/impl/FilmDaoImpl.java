@@ -8,7 +8,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
@@ -49,6 +51,13 @@ public class FilmDaoImpl implements FilmDao {
                 .orElse(null);
     }
 
+
+    private List<Director> directorMapper(int id) {
+        String sql = "SELECT D.ID, D.NAME FROM DIRECTOR AS D " +
+                "JOIN FILM_DIRECTOR AS FD ON D.ID = FD.DIRECTOR_ID WHERE FILM_ID=?";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Director.class), id);
+    }
+
     @Override
     public List<Film> getFilms() {
         String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME " +
@@ -66,6 +75,7 @@ public class FilmDaoImpl implements FilmDao {
                         .mpa(ratingMpaMapper(rs.getInt("MPA")))
                         .genres(genreMapper(rs.getInt("id")))
                         .userLikes(userLikesMapper(rs.getInt("id")))
+                        .directors(directorMapper(rs.getInt("id")))
                         .build();
                 filmList.add(film);
             }
@@ -73,6 +83,7 @@ public class FilmDaoImpl implements FilmDao {
         });
 
     }
+
 
     @Override
     public Optional<Film> getFilm(long id) {
@@ -87,6 +98,7 @@ public class FilmDaoImpl implements FilmDao {
                         .mpa(ratingMpaMapper(rs.getInt("MPA")))
                         .genres(genreMapper(rs.getInt("id")))
                         .userLikes(userLikesMapper(rs.getInt("id")))
+                        .directors(directorMapper(rs.getInt("id")))
                         .build(), id).stream()
                 .findAny()
                 .orElseThrow(() -> new FilmNotFoundException("Такого фильма не существует")));
@@ -169,6 +181,7 @@ public class FilmDaoImpl implements FilmDao {
         throw new FilmNotFoundException("Такого фильма не существует");
     }
 
+
     public List<Film> getCommonFilms(long userId, long friendId) {
         String sql = "SELECT F.* FROM FILMS AS F " +
                 "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
@@ -188,6 +201,7 @@ public class FilmDaoImpl implements FilmDao {
             return filmList;
         }, userId, friendId);
     }
+
 
     @Override
     public Film createFilm(Film newFilm) {
@@ -212,9 +226,13 @@ public class FilmDaoImpl implements FilmDao {
         newFilm.setId(key.longValue());
         if (newFilm.getGenres() != null) {
             newFilm.getGenres()
-                    .forEach(x -> jdbcTemplate.update("INSERT INTO FILM_GENRE VALUES (?,?)", newFilm.getId(), x.getId()));
+                    .forEach(x -> jdbcTemplate.update("INSERT INTO FILM_GENRE VALUES (?,?)", newFilm.getId(),
+                            x.getId()));
         }
-
+        if (newFilm.getDirectors() != null) {
+            newFilm.getDirectors().forEach(x -> jdbcTemplate.update("INSERT INTO FILM_DIRECTOR VALUES (?,?)",
+                    newFilm.getId(), x.getId()));
+        }
         return getFilm(newFilm.getId()).get();
     }
 
@@ -230,6 +248,8 @@ public class FilmDaoImpl implements FilmDao {
                 newFilm.getId());
         String sqlDelete = "DELETE FROM FILM_GENRE WHERE FILM_ID=?";
         jdbcTemplate.update(sqlDelete, newFilm.getId());
+        String sqlDeleteDirector = "DELETE FROM FILM_DIRECTOR WHERE FILM_ID=?";
+        jdbcTemplate.update(sqlDeleteDirector, newFilm.getId());
         if (!newFilm.getGenres().isEmpty()) {
             String sqlInsert = "INSERT INTO FILM_GENRE VALUES (?,?)";
             List<Genre> uniqueGenre = newFilm.getGenres().stream()
@@ -237,7 +257,80 @@ public class FilmDaoImpl implements FilmDao {
                             new TreeSet<>(Comparator.comparingInt(Genre::getId))), ArrayList::new));
             uniqueGenre.forEach(x -> jdbcTemplate.update(sqlInsert, newFilm.getId(), x.getId()));
         }
+        if (!newFilm.getDirectors().isEmpty()) {
+            String sqlInsert = "INSERT INTO FILM_DIRECTOR VALUES (?,?)";
+            List<Director> directors = newFilm.getDirectors().stream()
+                    .collect(collectingAndThen(toCollection(() ->
+                            new TreeSet<>(Comparator.comparingLong(Director::getId))), ArrayList::new));
+            directors.forEach(x -> jdbcTemplate.update(sqlInsert, newFilm.getId(), x.getId()));
+        }
         return getFilm(newFilm.getId()).get();
+    }
+
+    public List<Film> sortFilmsDirector(int directorId, String sortBy) {
+        if (directorMapper(directorId).isEmpty()) {
+            log.error("Режиссёр с таким id не существует");
+            throw new DirectorNotFoundException("Режиссёр с таким id не существует");
+        }
+        if (Objects.equals(sortBy, "year")) {
+            String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME " +
+                    "FROM FILMS AS F " +
+                    "JOIN MPA_RATINGS AS MA ON F.MPA = MA.ID " +
+                    "JOIN FILM_DIRECTOR AS FD ON F.ID = FD.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? " +
+                    "ORDER BY F.RELEASE_DATE ";
+            return jdbcTemplate.query(sql, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    mapRowToFilm(rs);
+                    Film film = new Film().toBuilder()
+                            .id(rs.getInt("id"))
+                            .name(rs.getString("name"))
+                            .description(rs.getString("description"))
+                            .duration(rs.getInt("duration"))
+                            .releaseDate(rs.getDate("release_date").toLocalDate())
+                            .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                            .genres(genreMapper(rs.getInt("id")))
+                            .userLikes(userLikesMapper(rs.getInt("id")))
+                            .directors(directorMapper(rs.getInt("id")))
+                            .build();
+                    filmList.add(film);
+                }
+                return filmList;
+
+            }, directorId);
+        }
+        if (Objects.equals(sortBy, "likes")) {
+            String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME " +
+                    "FROM FILMS AS F " +
+                    "JOIN MPA_RATINGS AS MA ON F.MPA = MA.ID " +
+                    "JOIN FILM_DIRECTOR AS FD ON F.ID = FD.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? ";
+            return jdbcTemplate.query(sql, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = new Film().toBuilder()
+                            .id(rs.getInt("id"))
+                            .name(rs.getString("name"))
+                            .description(rs.getString("description"))
+                            .duration(rs.getInt("duration"))
+                            .releaseDate(rs.getDate("release_date").toLocalDate())
+                            .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                            .genres(genreMapper(rs.getInt("id")))
+                            .userLikes(userLikesMapper(rs.getInt("id")))
+                            .directors(directorMapper(rs.getInt("id")))
+                            .build();
+                    filmList.add(film);
+                }
+                filmList.forEach(o1 -> {
+                    o1.getUserLikes().sort(Comparator.naturalOrder());
+                });
+                return filmList;
+
+            }, directorId);
+
+        }
+        return null;
     }
 
     @Override
@@ -288,4 +381,3 @@ public class FilmDaoImpl implements FilmDao {
                 .build();
     }
 }
-

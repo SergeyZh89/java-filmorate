@@ -46,9 +46,15 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(@RequestParam long userId, long friendId) {
+    public List<Film> getCommonFilms(@RequestParam long userId, long friendId){
         log.debug("Получен запрос на получение общих фильмов");
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirectorId(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.debug("Получен запрос на получение фильмов режиссёра");
+        return filmService.getFilmsDirector(directorId, sortBy);
     }
 
     @GetMapping("/search")

@@ -64,6 +64,10 @@ public class FilmService {
         return filmDao.getCommonFilms(userId, friendId);
     }
 
+    public List<Film> getFilmsDirector(int director_id, String sortBy){
+        return filmDao.sortFilmsDirector(director_id, sortBy);
+    }
+
     public void deleteFilm(long id) {
         filmDao.deleteFilm(id);
     }
