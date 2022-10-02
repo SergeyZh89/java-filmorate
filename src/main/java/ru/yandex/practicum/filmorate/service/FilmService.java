@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class FilmService implements FilmDao {
+public class FilmService {
     private final FilmDaoImpl filmDao;
 
     @Autowired
@@ -21,12 +21,11 @@ public class FilmService implements FilmDao {
         this.filmDao = filmDao;
     }
 
-    @Override
+
     public void userLikeFilm(Film film, long id) {
         filmDao.userLikeFilm(film, id);
     }
 
-    @Override
     public Film userDisLikeFilm(Film film, long id) {
         if (id <= 0) {
             throw new UserNotFoundException("Такого пользоватаеля не существует");
@@ -34,12 +33,10 @@ public class FilmService implements FilmDao {
         return filmDao.userDisLikeFilm(film, id);
     }
 
-    @Override
     public List<Film> getFilms() {
         return filmDao.getFilms();
     }
 
-    @Override
     public Film createFilm(Film film) {
         if (film.getMpa() == null) {
             throw new ValidationException("Требуется указать рейтинг фильма");
@@ -47,7 +44,6 @@ public class FilmService implements FilmDao {
         return filmDao.createFilm(film);
     }
 
-    @Override
     public Film updateFilm(Film film) {
         if (film.getId() <= 0) {
             throw new FilmNotFoundException("Такого фильма не существует");
@@ -55,7 +51,6 @@ public class FilmService implements FilmDao {
         return filmDao.updateFilm(film);
     }
 
-    @Override
     public Optional<Film> getFilm(long id) {
         if (id <= 0) {
             throw new FilmNotFoundException("Такого фильма не существует");
@@ -63,7 +58,6 @@ public class FilmService implements FilmDao {
         return filmDao.getFilm(id);
     }
 
-    @Override
     public List<Film> getPopularFilms(int count) {
         return filmDao.getPopularFilms(count);
     }
@@ -72,7 +66,6 @@ public class FilmService implements FilmDao {
         return filmDao.getCommonFilms(userId, friendId);
     }
 
-    @Override
     public void deleteFilm(long id) {
         filmDao.deleteFilm(id);
     }

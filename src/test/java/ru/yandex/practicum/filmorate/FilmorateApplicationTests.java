@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.service.RatingMpaService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -345,5 +346,74 @@ class FilmorateApplicationTests {
         assertThat(filmService.getFilms()).hasSize(1);
         filmService.deleteFilm(1);
         assertThat(filmService.getFilms()).isEmpty();
+    }
+
+    @Test
+    void testGetRecommendationsByUser(){
+
+        int recommendationsCount = 5;
+        List<Film> recList;
+
+        User user1 = new User().toBuilder()
+                .name("User1")
+                .login("User1Login")
+                .email("user1@mail.ru")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+        user1 = userService.addUser(user1).get();
+
+        User user2 = new User().toBuilder()
+                .name("User2")
+                .login("User2Login")
+                .email("user2@mail.ru")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+        user2 = userService.addUser(user2).get();
+
+        Film film11 = new Film().toBuilder()
+                .name("Film_11")
+                .duration(120)
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .mpa(new RatingMpa(1, null))
+                .build();
+        film11 = filmService.createFilm(film11);
+
+        Film film12 = new Film().toBuilder()
+                .name("Film_12")
+                .duration(120)
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .mpa(new RatingMpa(1, null))
+                .build();
+        film12 = filmService.createFilm(film12);
+
+        Film film13 = new Film().toBuilder()
+                .name("Film_13")
+                .duration(120)
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .mpa(new RatingMpa(1, null))
+                .build();
+        film13 = filmService.createFilm(film13);
+
+        recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
+        assertThat(recList).hasSize(0);
+
+        filmService.userLikeFilm(film13, user1.getId());
+        recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
+        assertThat(recList).hasSize(0);
+
+        filmService.userLikeFilm(film13, user2.getId());
+        recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
+        assertThat(recList).hasSize(0);
+
+        filmService.userLikeFilm(film12, user2.getId());
+        filmService.userLikeFilm(film11, user1.getId());
+
+        recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
+        assertThat(recList).hasSize(1);
+        assertThat(recList.get(0)).hasFieldOrPropertyWithValue("name", "Film_12");
+
+        recList = userService.getRecommendationsByUser(user2.getId(), recommendationsCount);
+        assertThat(recList).hasSize(1);
+        assertThat(recList.get(0)).hasFieldOrPropertyWithValue("name", "Film_11");
     }
 }

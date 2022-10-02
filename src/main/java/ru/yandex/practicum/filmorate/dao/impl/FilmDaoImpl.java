@@ -30,17 +30,17 @@ public class FilmDaoImpl implements FilmDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private List<Genre> genreMapper(int id) {
+    public List<Genre> genreMapper(int id) {
         String sql = "SELECT G.NAME, G.ID FROM GENRES AS G JOIN FILM_GENRE AS FG ON G.ID = FG.GENRE_ID WHERE FILM_ID=?";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Genre.class), id);
     }
 
-    private List<Long> userLikesMapper(int id) {
+    public List<Long> userLikesMapper(int id) {
         String sql = "SELECT USER_ID FROM FILM_LIKES WHERE FILM_ID=?";
         return jdbcTemplate.queryForList(sql, Long.TYPE, id);
     }
 
-    private RatingMpa ratingMpaMapper(int id) {
+    public RatingMpa ratingMpaMapper(int id) {
         String sql = "SELECT * FROM MPA_RATINGS WHERE ID=?";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(RatingMpa.class), id).stream()
                 .findFirst()
