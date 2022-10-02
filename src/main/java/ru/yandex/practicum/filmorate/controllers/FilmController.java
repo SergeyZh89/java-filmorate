@@ -49,6 +49,12 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirectorId(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.debug("Получен запрос на получение фильмов режиссёра");
+        return filmService.getFilmsDirector(directorId, sortBy);
+    }
+
     @PostMapping
     public Film createFilm(@RequestBody Film newFilm) {
         log.debug("Получен запрос на добавление фильма: id " + newFilm.getId());
