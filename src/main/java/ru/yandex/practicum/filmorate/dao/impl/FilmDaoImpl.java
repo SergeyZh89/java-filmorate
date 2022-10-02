@@ -259,6 +259,22 @@ public class FilmDaoImpl implements FilmDao {
         jdbcTemplate.update(sql, id);
     }
 
+    @Override
+    public List<Film> getPopularFilmsBySearch(String query, List<String> by) {
+        if (by.isEmpty()) {
+            String sql = "SELECT * FROM FILMS WHERE FILMS.DESCRIPTION LIKE '%?%'";
+            return jdbcTemplate.query(sql, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = mapRowToFilm(rs);
+                    filmList.add(film);
+                }
+                return filmList;
+            }, query, by);
+        }
+        throw new FilmNotFoundException("Такого фильма не существует");
+    }
+
     private Film mapRowToFilm(ResultSet rs) throws SQLException {
         return new Film().toBuilder()
                 .id(rs.getInt("id"))

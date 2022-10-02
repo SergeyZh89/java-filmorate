@@ -21,4 +21,6 @@ public interface FilmDao {
     Film userDisLikeFilm(Film film, long id);
 
     void deleteFilm(long id);
+
+    List<Film> getPopularFilmsBySearch(String query, List<String> by);
 }
