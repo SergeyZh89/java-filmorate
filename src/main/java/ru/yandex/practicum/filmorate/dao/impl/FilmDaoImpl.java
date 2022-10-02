@@ -354,8 +354,13 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getPopularFilmsBySearch(String query, List<String> by) {
-        if (by.isEmpty()) {
-            String sql = "SELECT * FROM FILMS WHERE FILMS.DESCRIPTION LIKE '%?%'";
+        if ((query == null) && (by.isEmpty())) {
+            String sql = "SELECT F.* FROM FILMS AS F " +
+                    "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
+                    "GROUP BY F.ID " +
+                    "ORDER BY COUNT(FL.FILM_ID) " +
+                    "DESC " +
+                    "LIMIT ?";
             return jdbcTemplate.query(sql, rs -> {
                 List<Film> filmList = new ArrayList<>();
                 while (rs.next()) {
@@ -363,9 +368,20 @@ public class FilmDaoImpl implements FilmDao {
                     filmList.add(film);
                 }
                 return filmList;
-            }, query, by);
+            });
         }
-        throw new FilmNotFoundException("Такого фильма не существует");
+        String sqlFilms = "SELECT * FROM FILMS WHERE DESCRIPTION LIKE ?";
+        return jdbcTemplate.query(sqlFilms, rs -> {
+            List<Film> filmList = new ArrayList<>();
+            while (rs.next()){
+                Film film = mapRowToFilm(rs);
+                filmList.add(film);
+            }
+            return filmList;
+        }, String.format("%%%s%%", query));
+
+        String sqlDirectors = "SELECT";
+        return jdbcTemplate.query()
     }
 
     private Film mapRowToFilm(ResultSet rs) throws SQLException {
