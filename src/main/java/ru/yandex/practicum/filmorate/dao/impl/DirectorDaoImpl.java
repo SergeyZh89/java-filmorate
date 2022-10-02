@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+
 @Slf4j
 @Component
 public class DirectorDaoImpl implements DirectorDao {
@@ -45,7 +46,7 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public Optional<Director> createDirector(Director director) {
-        if (director.getName().isEmpty() || director.getName() == null || director.getName().isBlank()){
+        if (director.getName().isEmpty() || director.getName() == null || director.getName().isBlank()) {
             log.error("Имя режиссёра не может быть пустым");
             throw new ValidationException("Имя режиссёра не может быть пустым");
         }
@@ -65,7 +66,7 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public Director updateDirector(Director director) {
-        if (getDirectorById(director.getId()).isEmpty()){
+        if (getDirectorById(director.getId()).isEmpty()) {
             throw new DirectorNotFoundException("Режиссёра с таким id не существует");
         }
         String sql = "UPDATE DIRECTOR SET NAME=? WHERE ID=?";

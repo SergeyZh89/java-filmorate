@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dao.impl.RecommendationsDaoImpl;
 import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -68,7 +67,7 @@ public class UserService {
         userDao.deleteUser(id);
     }
 
-    public List<Film> getRecommendationsByUser(long userId, int recCount){
+    public List<Film> getRecommendationsByUser(long userId, int recCount) {
         return recommendationsDao.getRecommendationsByUser(userId, recCount);
     }
 }

@@ -177,7 +177,6 @@ public class FilmDaoImpl implements FilmDao {
                 return filmList;
             }, year, count);
         }
-
         throw new FilmNotFoundException("Такого фильма не существует");
     }
 
@@ -354,34 +353,78 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getPopularFilmsBySearch(String query, List<String> by) {
-        if ((query == null) && (by.isEmpty())) {
+        if ((query == null)) {
             String sql = "SELECT F.* FROM FILMS AS F " +
                     "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
                     "GROUP BY F.ID " +
                     "ORDER BY COUNT(FL.FILM_ID) " +
-                    "DESC " +
-                    "LIMIT ?";
-            return jdbcTemplate.query(sql, rs -> {
+                    "DESC";
+            return Optional.ofNullable(jdbcTemplate.query(sql, rs -> {
                 List<Film> filmList = new ArrayList<>();
                 while (rs.next()) {
                     Film film = mapRowToFilm(rs);
                     filmList.add(film);
                 }
                 return filmList;
-            });
+            })).orElseThrow(() -> new FilmNotFoundException("Фильмов не найдено"));
         }
-        String sqlFilms = "SELECT * FROM FILMS WHERE DESCRIPTION LIKE ?";
-        return jdbcTemplate.query(sqlFilms, rs -> {
-            List<Film> filmList = new ArrayList<>();
-            while (rs.next()){
-                Film film = mapRowToFilm(rs);
-                filmList.add(film);
+        if (by.size() == 1) {
+            String search = by.get(0);
+            if ("title".equals(search)) {
+                String sqlTitle = "SELECT * FROM FILMS AS F\n" +
+                        "         LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID\n" +
+                        "WHERE LOWER(NAME) LIKE LOWER(?)\n" +
+                        "GROUP BY F.ID\n" +
+                        "ORDER BY COUNT(FL.FILM_ID)\n" +
+                        "DESC";
+                return jdbcTemplate.query(sqlTitle, rs -> {
+                    List<Film> filmList = new ArrayList<>();
+                    while (rs.next()) {
+                        Film film = mapRowToFilm(rs);
+                        filmList.add(film);
+                    }
+                    return filmList;
+                }, String.format("%%%s%%", query));
+            } else if ("director".equals(search)) {
+                String sqlDirector = "SELECT F.ID, F.NAME, F.DESCRIPTION, D.NAME, F.DURATION, F.RELEASE_DATE, F.MPA\n" +
+                        "FROM FILMS AS F\n" +
+                        "         LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID\n" +
+                        "         LEFT JOIN FILM_DIRECTOR FD on F.ID = FD.FILM_ID\n" +
+                        "         LEFT JOIN DIRECTOR D on FD.DIRECTOR_ID = D.ID\n" +
+                        "WHERE LOWER(D.NAME) LIKE LOWER(?)\n" +
+                        "GROUP BY F.ID\n" +
+                        "ORDER BY COUNT(FL.FILM_ID)\n" +
+                        "DESC";
+                return jdbcTemplate.query(sqlDirector, rs -> {
+                    List<Film> filmList = new ArrayList<>();
+                    while (rs.next()) {
+                        Film film = mapRowToFilm(rs);
+                        filmList.add(film);
+                    }
+                    return filmList;
+                }, String.format("%%%s%%", query));
             }
-            return filmList;
-        }, String.format("%%%s%%", query));
-
-        String sqlDirectors = "SELECT";
-        return jdbcTemplate.query()
+        } else if (by.size() == 2) {
+            String sqlFilms = "SELECT F.ID, F.NAME, F.DESCRIPTION, D.NAME, F.DURATION, F.RELEASE_DATE, F.MPA\n" +
+                    "FROM FILMS AS F\n" +
+                    "         LEFT JOIN FILM_DIRECTOR FD on F.ID = FD.FILM_ID\n" +
+                    "         LEFT JOIN DIRECTOR D on FD.DIRECTOR_ID = D.ID\n" +
+                    "         LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID\n" +
+                    "WHERE LOWER(F.NAME) LIKE LOWER(?)\n" +
+                    "   OR LOWER(D.NAME) LIKE LOWER(?)\n" +
+                    "GROUP BY F.ID\n" +
+                    "ORDER BY COUNT(FL.FILM_ID)\n" +
+                    "DESC";
+            return jdbcTemplate.query(sqlFilms, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = mapRowToFilm(rs);
+                    filmList.add(film);
+                }
+                return filmList;
+            }, String.format("%%%s%%", query), String.format("%%%s%%", query));
+        }
+        throw new FilmNotFoundException("Такого фильма не существует");
     }
 
     private Film mapRowToFilm(ResultSet rs) throws SQLException {
@@ -394,6 +437,7 @@ public class FilmDaoImpl implements FilmDao {
                 .mpa(ratingMpaMapper(rs.getInt("MPA")))
                 .genres(genreMapper(rs.getInt("id")))
                 .userLikes(userLikesMapper(rs.getInt("id")))
+                .directors(directorMapper(rs.getInt("id")))
                 .build();
     }
 }

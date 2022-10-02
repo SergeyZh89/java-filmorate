@@ -26,7 +26,7 @@ public class RecommendationsDaoImpl implements RecommendationsDao {
         String sql = "WITH ul AS (\n" +
                 "SELECT * \n" +
                 "FROM FILM_LIKES fl \n" +
-                "WHERE fl.USER_ID = "+ userId +" \n" +
+                "WHERE fl.USER_ID = " + userId + " \n" +
                 "),\n" +
                 "fu AS (\n" +
                 "SELECT fl.USER_ID\n" +
@@ -49,19 +49,19 @@ public class RecommendationsDaoImpl implements RecommendationsDao {
                 "ORDER BY ff.FILM_RANK DESC \n" +
                 "LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs),
-               recCount);
+                recCount);
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         return new Film().toBuilder()
-                    .id(rs.getInt("id"))
-                    .name(rs.getString("name"))
-                    .description(rs.getString("description"))
-                    .duration(rs.getInt("duration"))
-                    .releaseDate(rs.getDate("release_date").toLocalDate())
-                    .mpa(filmDao.ratingMpaMapper(rs.getInt("MPA")))
-                    .genres(filmDao.genreMapper(rs.getInt("id")))
-                    .userLikes(filmDao.userLikesMapper(rs.getInt("id")))
-                    .build();
-        }
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .duration(rs.getInt("duration"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .mpa(filmDao.ratingMpaMapper(rs.getInt("MPA")))
+                .genres(filmDao.genreMapper(rs.getInt("id")))
+                .userLikes(filmDao.userLikesMapper(rs.getInt("id")))
+                .build();
+    }
 }
