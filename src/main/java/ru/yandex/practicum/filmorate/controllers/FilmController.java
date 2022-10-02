@@ -57,6 +57,13 @@ public class FilmController {
         return filmService.getFilmsDirector(directorId, sortBy);
     }
 
+    @GetMapping("/search")
+    public List<Film> getPopularFilmsBySearch(@RequestParam (required = false) String query,
+                                              @RequestParam (required = false) List<String> by) {
+        log.debug("Получен запрос на поиск фильмов");
+        return filmService.getPopularFilmsBySearch(query, by);
+    }
+
     @PostMapping
     public Film createFilm(@RequestBody Film newFilm) {
         log.debug("Получен запрос на добавление фильма: id " + newFilm.getId());

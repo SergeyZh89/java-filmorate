@@ -9,19 +9,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DirectorService implements DirectorDao {
+public class DirectorService {
     private final DirectorDao directorDao;
 
     public DirectorService(DirectorDao directorDao) {
         this.directorDao = directorDao;
     }
 
-    @Override
     public List<Director> getDirectors() {
         return directorDao.getDirectors();
     }
 
-    @Override
     public Optional<Director> getDirectorById(long id) {
         if (id <= 0) {
             throw new DirectorNotFoundException("Такого режиссера не существует");
@@ -29,12 +27,10 @@ public class DirectorService implements DirectorDao {
         return directorDao.getDirectorById(id);
     }
 
-    @Override
     public Optional<Director> createDirector(Director director) {
         return directorDao.createDirector(director);
     }
 
-    @Override
     public Director updateDirector(Director director) {
         if (director.getId() <= 0) {
             throw new DirectorNotFoundException("Такого режиссера не существует");
@@ -42,7 +38,6 @@ public class DirectorService implements DirectorDao {
         return directorDao.updateDirector(director);
     }
 
-    @Override
     public void deleteDirector(long id) {
         directorDao.deleteDirector(id);
     }

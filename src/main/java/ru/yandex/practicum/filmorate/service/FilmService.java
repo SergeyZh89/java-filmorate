@@ -71,4 +71,8 @@ public class FilmService {
     public void deleteFilm(long id) {
         filmDao.deleteFilm(id);
     }
+
+    public List<Film> getPopularFilmsBySearch(String query, List<String> by) {
+       return filmDao.getPopularFilmsBySearch(query,by);
+    }
 }

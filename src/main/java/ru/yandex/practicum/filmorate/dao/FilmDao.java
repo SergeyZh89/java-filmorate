@@ -29,4 +29,6 @@ public interface FilmDao {
     List<Genre> genreMapper(int id);
 
     List<Long> userLikesMapper(int id);
+
+    Object getPopularFilmsBySearch(String query, List<String> by);
 }
