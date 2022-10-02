@@ -9,13 +9,16 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -47,6 +50,13 @@ public class FilmDaoImpl implements FilmDao {
                 .orElse(null);
     }
 
+
+    private List<Director> directorMapper(int id) {
+        String sql = "SELECT D.ID, D.NAME FROM DIRECTOR AS D " +
+                "JOIN FILM_DIRECTOR AS FD ON D.ID = FD.DIRECTOR_ID WHERE FILM_ID=?";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Director.class), id);
+    }
+
     @Override
     public List<Film> getFilms() {
         String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME " +
@@ -64,6 +74,7 @@ public class FilmDaoImpl implements FilmDao {
                         .mpa(ratingMpaMapper(rs.getInt("MPA")))
                         .genres(genreMapper(rs.getInt("id")))
                         .userLikes(userLikesMapper(rs.getInt("id")))
+                        .directors(directorMapper(rs.getInt("id")))
                         .build();
                 filmList.add(film);
             }
@@ -85,6 +96,7 @@ public class FilmDaoImpl implements FilmDao {
                         .mpa(ratingMpaMapper(rs.getInt("MPA")))
                         .genres(genreMapper(rs.getInt("id")))
                         .userLikes(userLikesMapper(rs.getInt("id")))
+                        .directors(directorMapper(rs.getInt("id")))
                         .build(), id).stream()
                 .findAny()
                 .orElseThrow(() -> new FilmNotFoundException("Такого фильма не существует")));
@@ -117,7 +129,7 @@ public class FilmDaoImpl implements FilmDao {
         }, count);
     }
 
-    public List <Film> getCommonFilms(long userId, long friendId){
+    public List<Film> getCommonFilms(long userId, long friendId) {
         String sql = "SELECT F.* FROM FILMS AS F " +
                 "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
                 "LEFT JOIN USERS U ON FL.USER_ID = U.ID " +
@@ -169,9 +181,13 @@ public class FilmDaoImpl implements FilmDao {
         newFilm.setId(key.longValue());
         if (newFilm.getGenres() != null) {
             newFilm.getGenres()
-                    .forEach(x -> jdbcTemplate.update("INSERT INTO FILM_GENRE VALUES (?,?)", newFilm.getId(), x.getId()));
+                    .forEach(x -> jdbcTemplate.update("INSERT INTO FILM_GENRE VALUES (?,?)", newFilm.getId(),
+                            x.getId()));
         }
-
+        if (newFilm.getDirectors() != null) {
+            newFilm.getGenres().forEach(x -> jdbcTemplate.update("INSERT INTO FILM_DIRECTOR VALUES (?,?)",
+                    newFilm.getId(), x.getId()));
+        }
         return getFilm(newFilm.getId()).get();
     }
 
@@ -194,26 +210,65 @@ public class FilmDaoImpl implements FilmDao {
                             new TreeSet<>(Comparator.comparingInt(Genre::getId))), ArrayList::new));
             uniqueGenre.forEach(x -> jdbcTemplate.update(sqlInsert, newFilm.getId(), x.getId()));
         }
+        if (!newFilm.getDirectors().isEmpty()) {
+            String sqlInsert = "INSERT INTO FILM_DIRECTOR VALUES (?,?)";
+            List<Director> directors = newFilm.getDirectors().stream()
+                    .collect(collectingAndThen(toCollection(() ->
+                            new TreeSet<>(Comparator.comparingLong(Director::getId))), ArrayList::new));
+            directors.forEach(x -> jdbcTemplate.update(sqlInsert, newFilm.getId(), x.getId()));
+        }
         return getFilm(newFilm.getId()).get();
     }
 
-    @Override
-    public void userLikeFilm(Film film, long id) {
-        String sql = "INSERT INTO FILM_LIKES VALUES (?,?)";
-        jdbcTemplate.update(sql, film.getId(), id);
+    public List<Film> sortFilmsDirector(long directorId, String sortBy) {
+        if (Objects.equals(sortBy, "year")) {
+            String sql = "SELECT F.ID, F.NAME, F.DESCRIPTION, F.DURATION, F.RELEASE_DATE, MPA, MA.NAME " +
+                    "FROM FILMS AS F " +
+                    "JOIN MPA_RATINGS AS MA ON F.MPA = MA.ID " +
+                    "JOIN FILM_DIRECTOR AS FD ON MA.ID = FD.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? " +
+                    "ORDER BY F.RELEASE_DATE ";
+            return jdbcTemplate.query(sql, rs -> {
+                List<Film> filmList = new ArrayList<>();
+                while (rs.next()) {
+                    Film film = new Film().toBuilder()
+                            .id(rs.getInt("id"))
+                            .name(rs.getString("name"))
+                            .description(rs.getString("description"))
+                            .duration(rs.getInt("duration"))
+                            .releaseDate(rs.getDate("release_date").toLocalDate())
+                            .mpa(ratingMpaMapper(rs.getInt("MPA")))
+                            .genres(genreMapper(rs.getInt("id")))
+                            .userLikes(userLikesMapper(rs.getInt("id")))
+                            .directors(directorMapper(rs.getInt("id")))
+                            .build();
+                    filmList.add(film);
+                }
+                return filmList;
+
+            }, directorId);
+
+        }
+        return null;
     }
 
-    @Override
-    public Film userDisLikeFilm(Film film, long id) {
-        String sql = "DELETE FROM FILM_LIKES WHERE FILM_ID=? AND USER_ID=?";
-        jdbcTemplate.update(sql, film.getId(), id);
-        return getFilm(film.getId()).get();
-    }
+        @Override
+        public void userLikeFilm (Film film,long id){
+            String sql = "INSERT INTO FILM_LIKES VALUES (?,?)";
+            jdbcTemplate.update(sql, film.getId(), id);
+        }
 
-    @Override
-    public void deleteFilm(long id) {
-        String sql = "DELETE FROM FILMS WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+        @Override
+        public Film userDisLikeFilm (Film film,long id){
+            String sql = "DELETE FROM FILM_LIKES WHERE FILM_ID=? AND USER_ID=?";
+            jdbcTemplate.update(sql, film.getId(), id);
+            return getFilm(film.getId()).get();
+        }
+
+        @Override
+        public void deleteFilm ( long id){
+            String sql = "DELETE FROM FILMS WHERE id = ?";
+            jdbcTemplate.update(sql, id);
+        }
     }
-}
 

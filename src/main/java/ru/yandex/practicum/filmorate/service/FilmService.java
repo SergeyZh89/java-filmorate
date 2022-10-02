@@ -72,6 +72,10 @@ public class FilmService implements FilmDao {
         return filmDao.getCommonFilms(userId, friendId);
     }
 
+    public List<Film> getFilmsDirector(int director_id, String sortBy){
+        return filmDao.sortFilmsDirector(director_id, sortBy);
+    }
+
     @Override
     public void deleteFilm(long id) {
         filmDao.deleteFilm(id);
