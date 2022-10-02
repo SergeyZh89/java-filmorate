@@ -226,7 +226,7 @@ public class FilmDaoImpl implements FilmDao {
                     "FROM FILMS AS F " +
                     "JOIN MPA_RATINGS AS MA ON F.MPA = MA.ID " +
                     "JOIN FILM_DIRECTOR AS FD ON MA.ID = FD.FILM_ID " +
-                    "WHERE FD.DIRECTOR_ID = ?" +
+                    "WHERE FD.DIRECTOR_ID = ? " +
                     "ORDER BY F.RELEASE_DATE ";
             return jdbcTemplate.query(sql, rs -> {
                 List<Film> filmList = new ArrayList<>();
