@@ -233,7 +233,7 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(2, null))
                 .build();
         filmService.createFilm(otherFilm);
-        assertThat(filmService.getPopularFilms(2)).hasSize(2);
+        assertThat(filmService.getPopularFilms(2, null, null)).hasSize(2);
     }
 
     @Test
