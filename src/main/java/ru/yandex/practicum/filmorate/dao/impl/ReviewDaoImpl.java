@@ -36,11 +36,9 @@ public class ReviewDaoImpl implements ReviewDao {
     @Override
     public Review updateReview(Review review) {
         jdbcTemplate.update(
-                "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ? WHERE review_id = ?;",
+                "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?;",
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
                 review.getReviewId()
         );
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet("SELECT * FROM reviews WHERE review_id = ?;", review.getReviewId());
