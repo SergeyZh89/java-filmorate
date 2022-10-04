@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -334,20 +333,20 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void userLikeFilm(Film film, long userId) {
-        String sql = "INSERT INTO FILM_LIKES VALUES (?,?)";
-        jdbcTemplate.update(sql, film.getId(), userId);
+    public void userLikeFilm(long filmId, long userId) {
         feedService.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "ADD",
-                0L, film.getId()));
+                0L, filmId));
+        String sql = "MERGE INTO FILM_LIKES VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
     }
 
     @Override
-    public Film userDisLikeFilm(Film film, long userId) {
+    public Film userDisLikeFilm(long filmId, long userId) {
         String sql = "DELETE FROM FILM_LIKES WHERE FILM_ID=? AND USER_ID=?";
-        jdbcTemplate.update(sql, film.getId(), userId);
+        jdbcTemplate.update(sql, filmId, userId);
         feedService.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "REMOVE",
-                0L, film.getId()));
-        return getFilm(film.getId()).get();
+                0L, filmId));
+        return getFilm(filmId).get();
     }
 
     @Override

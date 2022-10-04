@@ -80,13 +80,13 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void userLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на добавление лайка фильму: id" + id + " от пользователя: id " + userId);
-        filmService.userLikeFilm(filmService.getFilm(id).get(), userId);
+        filmService.userLikeFilm(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film userDisLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на удаление лайка");
-        return filmService.userDisLikeFilm(filmService.getFilm(id).get(), userId);
+        return filmService.userDisLikeFilm(id, userId);
     }
 
     @DeleteMapping("{id}")
