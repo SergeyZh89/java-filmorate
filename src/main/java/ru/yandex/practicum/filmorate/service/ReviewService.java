@@ -1,47 +1,55 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.impl.FeedDaoImpl;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDaoImpl;
 import ru.yandex.practicum.filmorate.dao.impl.ReviewDaoImpl;
 import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class ReviewService {
 
     private final ReviewDaoImpl reviewDao;
     private final UserDaoImpl userDao;
     private final FilmDaoImpl filmDao;
-
-    @Autowired
-    public ReviewService(ReviewDaoImpl reviewDao, UserDaoImpl userDao, FilmDaoImpl filmDao) {
-        this.reviewDao = reviewDao;
-        this.userDao = userDao;
-        this.filmDao = filmDao;
-    }
+    private final FeedDaoImpl feedDao;
 
     public Review createReview(Review review) {
         checkIfFilmExists(review.getFilmId());
         checkIfUserExists(review.getUserId());
-        return reviewDao.createReview(review);
+        Review newReview = reviewDao.createReview(review);
+        feedDao.addEvent(new Event(System.currentTimeMillis(), newReview.getUserId(),
+                "REVIEW", "ADD",
+                0L, newReview.getReviewId()));
+        return newReview;
     }
 
     public Review updateReview(Review review) {
         checkIfFilmExists(review.getFilmId());
         checkIfUserExists(review.getUserId());
         checkIfReviewExists(review.getReviewId());
-        return reviewDao.updateReview(review);
+        Review reviewUpdate = reviewDao.updateReview(review);
+        feedDao.addEvent(new Event(System.currentTimeMillis(), reviewUpdate.getUserId(),
+                "REVIEW", "UPDATE",
+                0L, reviewUpdate.getReviewId()));
+        return reviewUpdate;
     }
 
     public void deleteReview(long id) {
+        feedDao.addEvent(new Event(System.currentTimeMillis(), getReview(id).getUserId(), "REVIEW",
+                "REMOVE",
+                0L, id));
         reviewDao.deleteReview(id);
     }
 

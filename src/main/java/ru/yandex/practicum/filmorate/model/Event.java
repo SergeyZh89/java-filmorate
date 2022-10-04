@@ -9,7 +9,11 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 @AllArgsConstructor
 @Component
-public class Director {
-    private long id;
-    private String name;
+public class Event {
+    private long timestamp;
+    private long userId;
+    private String eventType;
+    private String operation;
+    private long eventId;
+    private long entityId;
 }

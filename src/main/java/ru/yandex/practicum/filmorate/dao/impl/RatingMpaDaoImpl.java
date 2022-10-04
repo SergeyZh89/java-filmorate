@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @Component
 public class RatingMpaDaoImpl implements RatingMpaDao {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public RatingMpaDaoImpl(JdbcTemplate jdbcTemplate) {

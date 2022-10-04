@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -10,10 +11,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.RatingMpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.FeedService;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -28,10 +27,12 @@ import static java.util.stream.Collectors.toCollection;
 @Component
 public class FilmDaoImpl implements FilmDao {
     private final JdbcTemplate jdbcTemplate;
+    FeedService feedService;
 
     @Autowired
-    public FilmDaoImpl(JdbcTemplate jdbcTemplate) {
+    public FilmDaoImpl(JdbcTemplate jdbcTemplate, FeedService feedService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.feedService = feedService;
     }
 
     public List<Genre> genreMapper(int id) {
@@ -333,15 +334,19 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void userLikeFilm(Film film, long id) {
+    public void userLikeFilm(Film film, long userId) {
         String sql = "INSERT INTO FILM_LIKES VALUES (?,?)";
-        jdbcTemplate.update(sql, film.getId(), id);
+        jdbcTemplate.update(sql, film.getId(), userId);
+        feedService.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "ADD",
+                0L, film.getId()));
     }
 
     @Override
-    public Film userDisLikeFilm(Film film, long id) {
+    public Film userDisLikeFilm(Film film, long userId) {
         String sql = "DELETE FROM FILM_LIKES WHERE FILM_ID=? AND USER_ID=?";
-        jdbcTemplate.update(sql, film.getId(), id);
+        jdbcTemplate.update(sql, film.getId(), userId);
+        feedService.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "REMOVE",
+                0L, film.getId()));
         return getFilm(film.getId()).get();
     }
 
