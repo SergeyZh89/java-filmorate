@@ -27,15 +27,15 @@ public class ReviewController {
 
     @PostMapping
     public Review createReview(@RequestBody Review review) {
-        validateReview(review);
         log.info("Добавление нового отзыва.");
+        validateReview(review);
         return reviewService.createReview(review);
     }
 
     @PutMapping
     public Review updateReview(@RequestBody Review review) {
-        validateReview(review);
         log.info("Редактирование уже имеющегося отзыва.");
+        validateReview(review);
         return reviewService.updateReview(review);
     }
 

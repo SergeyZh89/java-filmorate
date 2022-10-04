@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.impl.RecommendationsDaoImpl;
 import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
@@ -11,16 +11,11 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
     private final UserDaoImpl userDao;
     private final RecommendationsDaoImpl recommendationsDao;
-
-    @Autowired
-    public UserService(UserDaoImpl userDao, RecommendationsDaoImpl recommendationsDao) {
-        this.userDao = userDao;
-        this.recommendationsDao = recommendationsDao;
-    }
 
     public List<Long> addFriend(User user, User userOther) {
         return userDao.addFriend(user, userOther);
@@ -40,7 +35,7 @@ public class UserService {
 
     public Optional<User> getUser(long id) {
         if (id <= 0) {
-            throw new UserNotFoundException("Такого пользователя не существует");
+            throw new UserNotFoundException("Пользователя с таким id не существует.");
         }
         return userDao.getUser(id);
     }
@@ -51,7 +46,7 @@ public class UserService {
 
     public User updateUser(User newUser) {
         if (userDao.getUser(newUser.getId()) == null) {
-            throw new UserNotFoundException("Tакого пользователя не существует");
+            throw new UserNotFoundException("Пользователя с таким id не существует.");
         }
         return userDao.updateUser(newUser);
     }
@@ -62,7 +57,7 @@ public class UserService {
 
     public void deleteUser(long id) {
         if (id <= 0) {
-            throw new UserNotFoundException("Tакого пользователя не существует");
+            throw new UserNotFoundException("Пользователя с таким id не существует.");
         }
         userDao.deleteUser(id);
     }

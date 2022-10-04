@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -9,24 +10,20 @@ import ru.yandex.practicum.filmorate.model.Review;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Component
 public class ReviewDaoImpl implements ReviewDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public ReviewDaoImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     @Override
     public Review createReview(Review review) {
         jdbcTemplate.update(
-                "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?);",
+                "INSERT INTO reviews (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?);",
                 review.getContent(),
                 review.getIsPositive(),
                 review.getUserId(),
-                review.getFilmId(),
-                0
+                review.getFilmId()
         );
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet("SELECT * FROM reviews ORDER BY review_id DESC LIMIT 1;");
         sqlRowSet.next();
@@ -41,16 +38,13 @@ public class ReviewDaoImpl implements ReviewDao {
                 review.getIsPositive(),
                 review.getReviewId()
         );
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet("SELECT * FROM reviews WHERE review_id = ?;", review.getReviewId());
-        sqlRowSet.next();
-        return getReview(sqlRowSet);
-
+        return getReview(review.getReviewId());
     }
 
     @Override
     public void deleteReview(long id) {
-        jdbcTemplate.update("DELETE review_likes WHERE review_id = ?;", id);
-        jdbcTemplate.update("DELETE reviews WHERE review_id = ?;", id);
+        jdbcTemplate.update("DELETE FROM review_likes WHERE review_id = ?;", id);
+        jdbcTemplate.update("DELETE FROM reviews WHERE review_id = ?;", id);
     }
 
     @Override
@@ -129,7 +123,8 @@ public class ReviewDaoImpl implements ReviewDao {
     private void updateUseful(long id) {
         jdbcTemplate.update(
                 "UPDATE reviews AS r " +
-                        "SET useful = (SELECT COUNT(rl.user_id) FROM review_likes AS rl WHERE rl.review_id = r.review_id) - " +
+                        "SET useful = (SELECT COUNT(rl.user_id) FROM review_likes AS rl " +
+                        "WHERE rl.review_id = r.review_id) - " +
                         "(SELECT COUNT(rd.user_id) FROM review_dislikes AS rd WHERE rd.review_id = r.review_id) " +
                         "WHERE review_id = ?;",
                 id

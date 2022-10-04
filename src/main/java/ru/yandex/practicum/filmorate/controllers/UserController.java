@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -50,12 +49,6 @@ public class UserController {
         log.debug("Получен запрос на список общих друзей пользователя: id " + id + " с пользователем: id " + otherId);
         return userService.getCommonFriends(id, otherId);
     }
-
-    @GetMapping("{id}/feed")
-    public List<Event> getEventFeed(@PathVariable long id){
-        return null;
-    }
-
 
     @PutMapping("/{id}/friends/{friendId}")
     public List<Long> addFriend(@PathVariable long id, @PathVariable long friendId) {

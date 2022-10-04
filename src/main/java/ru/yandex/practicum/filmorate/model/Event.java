@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 public class Event {
+    private long timestamp;
     private long userId;
     private String eventType;
     private String operation;
     private long eventId;
+    private long entityId;
 }

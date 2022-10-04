@@ -24,4 +24,3 @@ public class Film {
     private List<Long> userLikes = new ArrayList<>();
     private List <Director> directors = new ArrayList<>();
 }
-

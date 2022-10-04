@@ -8,7 +8,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -21,9 +23,11 @@ import java.util.stream.Collectors;
 @Component
 public class UserDaoImpl implements UserDao {
     private final JdbcTemplate jdbcTemplate;
+    FeedService feedService;
 
-    public UserDaoImpl(JdbcTemplate jdbcTemplate) {
+    public UserDaoImpl(JdbcTemplate jdbcTemplate, FeedService feedService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.feedService = feedService;
     }
 
     @Override
@@ -44,6 +48,8 @@ public class UserDaoImpl implements UserDao {
         String sqlInsert = "INSERT INTO USER_FRIENDS VALUES (?,?)";
         String sqlDelete = "SELECT friends_id FROM USER_FRIENDS WHERE user_id=?";
         jdbcTemplate.update(sqlInsert, user.getId(), otherUser.getId());
+        feedService.addEvent(new Event(System.currentTimeMillis(), user.getId(), "FRIEND",
+                "ADD", 0L, otherUser.getId()));
         return jdbcTemplate.query(sqlDelete, rs -> {
             List<Long> list = new ArrayList<>();
             while (rs.next()) {
@@ -78,7 +84,10 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<Long> deleteFriend(User user, User userOther) {
-        jdbcTemplate.update("DELETE FROM USER_FRIENDS WHERE USER_ID=? AND FRIENDS_ID =?", user.getId(), userOther.getId());
+        jdbcTemplate.update("DELETE FROM USER_FRIENDS WHERE USER_ID=? AND FRIENDS_ID =?",
+                user.getId(), userOther.getId());
+        feedService.addEvent(new Event(System.currentTimeMillis(), user.getId(), "FRIEND",
+                "REMOVE", 0L, userOther.getId()));
         return jdbcTemplate.query("SELECT FRIENDS_ID FROM USER_FRIENDS WHERE USER_ID=?", rs -> {
             List<Long> userFriends = new ArrayList<>();
             while (rs.next()) {
@@ -90,7 +99,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> getUser(long id) {
-        return Optional.ofNullable(jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?", new BeanPropertyRowMapper<>(User.class), id)
+        return Optional.ofNullable(jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?",
+                        new BeanPropertyRowMapper<>(User.class), id)
                 .stream()
                 .findAny()
                 .orElseThrow(() -> new UserNotFoundException("Такого пользователя не существует")));
