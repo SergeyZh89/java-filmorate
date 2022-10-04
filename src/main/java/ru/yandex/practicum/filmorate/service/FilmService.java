@@ -17,15 +17,15 @@ import java.util.Optional;
 public class FilmService {
     private final FilmDaoImpl filmDao;
 
-    public void userLikeFilm(Film film, long id) {
-        filmDao.userLikeFilm(film, id);
+    public void userLikeFilm(long filmId, long id) {
+        filmDao.userLikeFilm(filmId, id);
     }
 
-    public Film userDisLikeFilm(Film film, long id) {
+    public Film userDisLikeFilm(long userId, long id) {
         if (id <= 0) {
             throw new UserNotFoundException("Такого пользоватаеля не существует");
         }
-        return filmDao.userDisLikeFilm(film, id);
+        return filmDao.userDisLikeFilm(userId, id);
     }
 
     public List<Film> getFilms() {

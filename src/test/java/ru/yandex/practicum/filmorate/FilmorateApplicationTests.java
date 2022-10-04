@@ -279,7 +279,7 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        filmService.userLikeFilm(filmService.getFilm(1).get(), 1);
+        filmService.userLikeFilm(1, 1);
         assertThat(filmService.getFilm(1).get().getUserLikes()).hasSize(1);
     }
 
@@ -299,8 +299,8 @@ class FilmorateApplicationTests {
                 .mpa(new RatingMpa(1, null))
                 .build();
         filmService.createFilm(film);
-        filmService.userLikeFilm(filmService.getFilm(1).get(), 1);
-        filmService.userDisLikeFilm(filmService.getFilm(1).get(), 1);
+        filmService.userLikeFilm(1, 1);
+        filmService.userDisLikeFilm(1, 1);
         assertThat(filmService.getFilm(1).get().getUserLikes()).isEmpty();
     }
 
@@ -397,16 +397,16 @@ class FilmorateApplicationTests {
         recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
         assertThat(recList).hasSize(0);
 
-        filmService.userLikeFilm(film13, user1.getId());
+        filmService.userLikeFilm(film13.getId(), user1.getId());
         recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
         assertThat(recList).hasSize(0);
 
-        filmService.userLikeFilm(film13, user2.getId());
+        filmService.userLikeFilm(film13.getId(), user2.getId());
         recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
         assertThat(recList).hasSize(0);
 
-        filmService.userLikeFilm(film12, user2.getId());
-        filmService.userLikeFilm(film11, user1.getId());
+        filmService.userLikeFilm(film12.getId(), user2.getId());
+        filmService.userLikeFilm(film11.getId(), user1.getId());
 
         recList = userService.getRecommendationsByUser(user1.getId(), recommendationsCount);
         assertThat(recList).hasSize(1);

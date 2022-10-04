@@ -18,9 +18,9 @@ public interface FilmDao {
 
     List<Film> getPopularFilms(int count, Long genreId, Integer year);
 
-    void userLikeFilm(Film film, long id);
+    void userLikeFilm(long filmId, long id);
 
-    Film userDisLikeFilm(Film film, long id);
+    Film userDisLikeFilm(long filmId, long id);
 
     void deleteFilm(long id);
 
