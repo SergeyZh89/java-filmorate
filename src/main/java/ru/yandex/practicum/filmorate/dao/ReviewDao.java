@@ -7,7 +7,6 @@ import java.util.List;
 
 @Component
 public interface ReviewDao {
-
     Review createReview(Review review);
 
     Review updateReview(Review review);
@@ -20,9 +19,9 @@ public interface ReviewDao {
 
     List<Review> getFilmReviews(long filmId);
 
-    void like(long id, long userId);
+    void addLike(long id, long userId);
 
-    void dislike(long id, long userId);
+    void addDislike(long id, long userId);
 
     void deleteLike(long id, long userId);
 

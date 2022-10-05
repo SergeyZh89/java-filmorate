@@ -31,19 +31,19 @@ public class DirectorDaoImpl implements DirectorDao {
     }
 
     @Override
-    public Optional<Director> getDirectorById(long id) {
+    public Director getDirectorById(long id) {
         String sqlQuery = "SELECT d.id, " +
                 "d.name " +
                 "FROM director AS d " +
                 "WHERE d.id = ?;";
-        return Optional.ofNullable(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), id)
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeDirector(rs), id)
                 .stream()
                 .findAny()
-                .orElseThrow(() -> new DirectorNotFoundException("Такого директора не существует")));
+                .orElseThrow(() -> new DirectorNotFoundException("Такого директора не существует"));
     }
 
     @Override
-    public Optional<Director> createDirector(Director director) {
+    public Director createDirector(Director director) {
         if (director.getName().isEmpty() || director.getName() == null || director.getName().isBlank()) {
             log.error("Имя режиссёра не может быть пустым");
             throw new ValidationException("Имя режиссёра не может быть пустым");
@@ -64,9 +64,6 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public Director updateDirector(Director director) {
-        if (getDirectorById(director.getId()).isEmpty()) {
-            throw new DirectorNotFoundException("Режиссёра с таким id не существует");
-        }
         String sql = "UPDATE DIRECTOR SET NAME=? WHERE ID=?";
         jdbcTemplate.update(sql, director.getName(),
                 director.getId());
