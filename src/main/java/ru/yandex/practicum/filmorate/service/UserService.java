@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.impl.RecommendationsDaoImpl;
-import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
+import ru.yandex.practicum.filmorate.dao.RecommendationsDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,8 +14,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class UserService {
-    private final UserDaoImpl userDao;
-    private final RecommendationsDaoImpl recommendationsDao;
+    private final UserDao userDao;
+    private final RecommendationsDao recommendationsDao;
 
     public List<Long> addFriend(User user, User userOther) {
         return userDao.addFriend(user, userOther);
@@ -45,13 +45,14 @@ public class UserService {
     }
 
     public User updateUser(User newUser) {
-        if (userDao.getUser(newUser.getId()) == null) {
+        if (userDao.getUser(newUser.getId()).isEmpty()) {
             throw new UserNotFoundException("Пользователя с таким id не существует.");
         }
         return userDao.updateUser(newUser);
     }
 
     public List<User> getFriends(long id) {
+        userDao.getUser(id);
         return userDao.getFriends(id);
     }
 

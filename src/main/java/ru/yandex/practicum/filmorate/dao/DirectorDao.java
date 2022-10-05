@@ -8,9 +8,9 @@ import java.util.Optional;
 public interface DirectorDao {
     List<Director> getDirectors();
 
-    Optional<Director> getDirectorById(long id);
+    Director getDirectorById(long id);
 
-    Optional<Director> createDirector(Director director);
+    Director createDirector(Director director);
 
     Director updateDirector(Director director);
 

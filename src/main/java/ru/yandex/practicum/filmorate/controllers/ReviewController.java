@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/reviews")
 @NoArgsConstructor
 public class ReviewController {
-
     private ReviewService reviewService;
 
     @Autowired
@@ -63,13 +62,13 @@ public class ReviewController {
     @PutMapping("/{id}/like/{userId}")
     public void like(@PathVariable long id, @PathVariable long userId) {
         log.info("Пользователь {} ставит лайк отзыву {}.", userId, id);
-        reviewService.like(id, userId);
+        reviewService.addLike(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     public void dislike(@PathVariable long id, @PathVariable long userId) {
         log.info("Пользователь {} ставит дизлайк отзыву {}.", userId, id);
-        reviewService.dislike(id, userId);
+        reviewService.addDislike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")

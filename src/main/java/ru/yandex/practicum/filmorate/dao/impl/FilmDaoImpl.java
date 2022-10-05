@@ -180,7 +180,7 @@ public class FilmDaoImpl implements FilmDao {
         throw new FilmNotFoundException("Такого фильма не существует");
     }
 
-
+    @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
         String sql = "SELECT F.* FROM FILMS AS F " +
                 "LEFT JOIN FILM_LIKES FL on F.ID = FL.FILM_ID " +
@@ -266,6 +266,7 @@ public class FilmDaoImpl implements FilmDao {
         return getFilm(newFilm.getId()).get();
     }
 
+    @Override
     public List<Film> sortFilmsDirector(int directorId, String sortBy) {
         if (directorMapper(directorId).isEmpty()) {
             log.error("Режиссёр с таким id не существует");

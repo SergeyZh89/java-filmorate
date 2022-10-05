@@ -20,20 +20,20 @@ public class DirectorService {
         return directorDao.getDirectors();
     }
 
-    public Optional<Director> getDirectorById(long id) {
+    public Director getDirectorById(long id) {
         if (id <= 0) {
             throw new DirectorNotFoundException("Такого режиссера не существует");
         }
         return directorDao.getDirectorById(id);
     }
 
-    public Optional<Director> createDirector(Director director) {
+    public Director createDirector(Director director) {
         return directorDao.createDirector(director);
     }
 
     public Director updateDirector(Director director) {
-        if (director.getId() <= 0) {
-            throw new DirectorNotFoundException("Такого режиссера не существует");
+        if (director.getId() <= 0 || directorDao.getDirectorById(director.getId()) == null) {
+            throw new DirectorNotFoundException(String.format("Режиссёра с идентификатором %d не существует.", director.getId()));
         }
         return directorDao.updateDirector(director);
     }

@@ -2,10 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.impl.FeedDaoImpl;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDaoImpl;
-import ru.yandex.practicum.filmorate.dao.impl.ReviewDaoImpl;
-import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
+import ru.yandex.practicum.filmorate.dao.FeedDao;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.ReviewDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -19,11 +19,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class ReviewService {
-
-    private final ReviewDaoImpl reviewDao;
-    private final UserDaoImpl userDao;
-    private final FilmDaoImpl filmDao;
-    private final FeedDaoImpl feedDao;
+    private final ReviewDao reviewDao;
+    private final UserDao userDao;
+    private final FilmDao filmDao;
+    private final FeedDao feedDao;
 
     public Review createReview(Review review) {
         checkIfFilmExists(review.getFilmId());
@@ -64,16 +63,16 @@ public class ReviewService {
                 getSortedLimitedList(reviewDao.getFilmReviews(filmId), count);
     }
 
-    public void like(long id, long userId) {
+    public void addLike(long id, long userId) {
         checkIfUserExists(userId);
         checkIfReviewExists(id);
-        reviewDao.like(id, userId);
+        reviewDao.addLike(id, userId);
     }
 
-    public void dislike(long id, long userId) {
+    public void addDislike(long id, long userId) {
         checkIfUserExists(userId);
         checkIfReviewExists(id);
-        reviewDao.dislike(id, userId);
+        reviewDao.addDislike(id, userId);
     }
 
     public void deleteLike(long id, long userId) {

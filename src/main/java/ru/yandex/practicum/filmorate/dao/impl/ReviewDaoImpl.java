@@ -13,7 +13,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class ReviewDaoImpl implements ReviewDao {
-
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -77,15 +76,13 @@ public class ReviewDaoImpl implements ReviewDao {
     }
 
     @Override
-    public void like(long id, long userId) {
-        jdbcTemplate.update("DELETE FROM review_dislikes WHERE review_id = ? AND user_id = ?;", id, userId);
+    public void addLike(long id, long userId) {
         jdbcTemplate.update("INSERT INTO review_likes (review_id, user_id) VALUES (?, ?);", id, userId);
         updateUseful(id);
     }
 
     @Override
-    public void dislike(long id, long userId) {
-        jdbcTemplate.update("DELETE FROM review_likes WHERE review_id = ? AND user_id = ?;", id, userId);
+    public void addDislike(long id, long userId) {
         jdbcTemplate.update("INSERT INTO review_dislikes (review_id, user_id) VALUES (?, ?);", id, userId);
         updateUseful(id);
     }

@@ -14,7 +14,14 @@ public class GlobalExceptionHandler {
         response.sendError(HttpStatus.BAD_REQUEST.value());
     }
 
-    @ExceptionHandler({UserNotFoundException.class, FilmNotFoundException.class, GenreNotFoundException.class, RatindMpaNotFoundException.class, DirectorNotFoundException.class, ReviewNotFoundException.class})
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            FilmNotFoundException.class,
+            GenreNotFoundException.class,
+            RatindMpaNotFoundException.class,
+            DirectorNotFoundException.class,
+            ReviewNotFoundException.class}
+    )
     public void handleNotFound(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.NOT_FOUND.value());
     }

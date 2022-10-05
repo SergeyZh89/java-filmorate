@@ -29,13 +29,13 @@ public class DirectorController {
     }
 
     @GetMapping("/{id}")
-    Optional<Director> getDirectorById(@PathVariable long id) {
+    Director getDirectorById(@PathVariable long id) {
         log.debug("Получен запрос режиссера с id " + id);
         return directorService.getDirectorById(id);
     }
 
     @PostMapping
-    Optional<Director> createDirector(@RequestBody Director director) {
+    Director createDirector(@RequestBody Director director) {
         log.debug("Получен запрос на создание режиссера");
         return directorService.createDirector(director);
     }

@@ -1,9 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDaoImpl;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
@@ -15,7 +14,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    private final FilmDaoImpl filmDao;
+    private final FilmDao filmDao;
 
     public void userLikeFilm(long filmId, long id) {
         filmDao.userLikeFilm(filmId, id);
@@ -61,8 +60,8 @@ public class FilmService {
         return filmDao.getCommonFilms(userId, friendId);
     }
 
-    public List<Film> getFilmsDirector(int director_id, String sortBy){
-        return filmDao.sortFilmsDirector(director_id, sortBy);
+    public List<Film> getFilmsDirector(int directorId, String sortBy){
+        return filmDao.sortFilmsDirector(directorId, sortBy);
     }
 
     public void deleteFilm(long id) {
@@ -70,6 +69,6 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilmsBySearch(String query, List<String> by) {
-       return filmDao.getPopularFilmsBySearch(query,by);
+       return filmDao.getPopularFilmsBySearch(query, by);
     }
 }
