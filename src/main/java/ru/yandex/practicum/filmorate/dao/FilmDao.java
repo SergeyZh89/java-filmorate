@@ -30,5 +30,9 @@ public interface FilmDao {
 
     List<Long> userLikesMapper(int id);
 
-    Object getPopularFilmsBySearch(String query, List<String> by);
+    List<Film> getPopularFilmsBySearch(String query, List<String> by);
+
+    List<Film> getCommonFilms(long userId, long friendId);
+
+    List<Film> sortFilmsDirector(int directorId, String sortBy);
 }
