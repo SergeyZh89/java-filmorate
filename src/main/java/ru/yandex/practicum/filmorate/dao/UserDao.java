@@ -23,5 +23,6 @@ public interface UserDao {
     List<User> getCommonFriends(long id, long otherId);
 
     List<Long> deleteFriend(User user, User userOther);
-}
 
+    void deleteUser(long id);
+}

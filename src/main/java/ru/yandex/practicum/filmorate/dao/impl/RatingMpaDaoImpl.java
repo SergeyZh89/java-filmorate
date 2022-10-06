@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,10 +9,9 @@ import ru.yandex.practicum.filmorate.model.RatingMpa;
 
 import java.util.List;
 
-@Slf4j
 @Component
 public class RatingMpaDaoImpl implements RatingMpaDao {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public RatingMpaDaoImpl(JdbcTemplate jdbcTemplate) {

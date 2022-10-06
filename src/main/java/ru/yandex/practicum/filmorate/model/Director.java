@@ -6,10 +6,10 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Data
-@Component
-@AllArgsConstructor
 @NoArgsConstructor
-public class RatingMpa {
-    private int id;
+@AllArgsConstructor
+@Component
+public class Director {
+    private long id;
     private String name;
 }

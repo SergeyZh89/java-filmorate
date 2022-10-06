@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -74,6 +75,18 @@ public class UserController {
     public List<Long> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         log.debug("Получен запрос на удаление из друзей пользователя: id " + id + " от пользователя: id " + friendId);
         return userService.deleteFriend(userService.getUser(id).get(), userService.getUser(friendId).get());
+    }
+
+    @DeleteMapping("{userId}")
+    public void deleteUser(@PathVariable long userId) {
+        log.debug("Получен запрос на удаление пользователя " + userId);
+        userService.deleteUser(userId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendationsByUser(@PathVariable long id
+            , @RequestParam(name = "count", defaultValue = "10") int count) {
+        return userService.getRecommendationsByUser(id, count);
     }
 
     protected void validatorUser(User user) {

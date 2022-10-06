@@ -9,13 +9,19 @@ import java.io.IOException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler({ValidationException.class})
     public void handlerBadValidation(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.BAD_REQUEST.value());
     }
 
-    @ExceptionHandler({UserNotFoundException.class, FilmNotFoundException.class, GenreNotFoundException.class, RatindMpaNotFoundException.class})
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            FilmNotFoundException.class,
+            GenreNotFoundException.class,
+            RatindMpaNotFoundException.class,
+            DirectorNotFoundException.class,
+            ReviewNotFoundException.class}
+    )
     public void handleNotFound(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.NOT_FOUND.value());
     }

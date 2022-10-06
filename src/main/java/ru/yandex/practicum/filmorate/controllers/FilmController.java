@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -31,15 +32,36 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilm(@PathVariable long id) {
+    public Optional<Film> getFilm(@PathVariable long id) {
         log.debug("Получен запрос фильмов под номером: " + id);
         return filmService.getFilm(id);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") int count) {
+    public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") int count,
+                                      @RequestParam(required = false) Long genreId,
+                                      @RequestParam(required = false) Integer year) {
         log.debug("Получен запрос на список популярных фильмов");
-        return filmService.getPopularFilms(count);
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam long userId, long friendId){
+        log.debug("Получен запрос на получение общих фильмов");
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirectorId(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.debug("Получен запрос на получение фильмов режиссёра");
+        return filmService.getFilmsDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getPopularFilmsBySearch(@RequestParam (required = false) String query,
+                                              @RequestParam (required = false) List<String> by) {
+        log.debug("Получен запрос на поиск фильмов");
+        return filmService.getPopularFilmsBySearch(query, by);
     }
 
     @PostMapping
@@ -58,13 +80,13 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void userLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на добавление лайка фильму: id" + id + " от пользователя: id " + userId);
-        filmService.userLikeFilm(filmService.getFilm(id), userId);
+        filmService.userLikeFilm(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film userDisLikeFilm(@PathVariable long id, @PathVariable long userId) {
         log.debug("Получен запрос на удаление лайка");
-        return filmService.userDisLikeFilm(filmService.getFilm(id), userId);
+        return filmService.userDisLikeFilm(id, userId);
     }
 
     @DeleteMapping("{id}")

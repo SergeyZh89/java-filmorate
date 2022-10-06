@@ -1,67 +1,69 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.RecommendationsDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
-import ru.yandex.practicum.filmorate.dao.impl.UserDaoImpl;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
-public class UserService implements UserDao {
-    private final UserDaoImpl userDao;
+public class UserService {
+    private final UserDao userDao;
+    private final RecommendationsDao recommendationsDao;
 
-    @Autowired
-    public UserService(UserDaoImpl userDao) {
-        this.userDao = userDao;
-    }
-
-    @Override
     public List<Long> addFriend(User user, User userOther) {
         return userDao.addFriend(user, userOther);
     }
 
-    @Override
     public List<Long> deleteFriend(User user, User userOther) {
         return userDao.deleteFriend(user, userOther);
     }
 
-    @Override
     public List<User> getCommonFriends(long id, long otherId) {
-       return userDao.getCommonFriends(id, otherId);
+        return userDao.getCommonFriends(id, otherId);
     }
 
-    @Override
     public List<User> getUsers() {
         return userDao.getUsers();
     }
 
-    @Override
     public Optional<User> getUser(long id) {
         if (id <= 0) {
-            throw new UserNotFoundException("Такого пользователя не существует");
+            throw new UserNotFoundException("Пользователя с таким id не существует.");
         }
         return userDao.getUser(id);
     }
 
-    @Override
     public Optional<User> addUser(User newUser) {
         return userDao.addUser(newUser);
     }
 
-    @Override
     public User updateUser(User newUser) {
-        if (userDao.getUser(newUser.getId()) == null) {
-            throw new UserNotFoundException("Tакого пользователя не существует");
+        if (userDao.getUser(newUser.getId()).isEmpty()) {
+            throw new UserNotFoundException("Пользователя с таким id не существует.");
         }
         return userDao.updateUser(newUser);
     }
 
-    @Override
     public List<User> getFriends(long id) {
+        userDao.getUser(id);
         return userDao.getFriends(id);
+    }
+
+    public void deleteUser(long id) {
+        if (id <= 0) {
+            throw new UserNotFoundException("Пользователя с таким id не существует.");
+        }
+        userDao.deleteUser(id);
+    }
+
+    public List<Film> getRecommendationsByUser(long userId, int recCount) {
+        return recommendationsDao.getRecommendationsByUser(userId, recCount);
     }
 }

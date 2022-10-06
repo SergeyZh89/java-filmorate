@@ -22,5 +22,5 @@ public class Film {
     private RatingMpa mpa;
     private List<Genre> genres = new ArrayList<>();
     private List<Long> userLikes = new ArrayList<>();
+    private List <Director> directors = new ArrayList<>();
 }
-

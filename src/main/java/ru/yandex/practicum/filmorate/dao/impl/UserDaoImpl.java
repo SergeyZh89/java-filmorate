@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public class UserDaoImpl implements UserDao {
     private final JdbcTemplate jdbcTemplate;
@@ -42,6 +42,7 @@ public class UserDaoImpl implements UserDao {
         String sqlInsert = "INSERT INTO USER_FRIENDS VALUES (?,?)";
         String sqlDelete = "SELECT friends_id FROM USER_FRIENDS WHERE user_id=?";
         jdbcTemplate.update(sqlInsert, user.getId(), otherUser.getId());
+        addEvent(new Event(System.currentTimeMillis(), user.getId(), "FRIEND", "ADD", 0L, otherUser.getId()));
         return jdbcTemplate.query(sqlDelete, rs -> {
             List<Long> list = new ArrayList<>();
             while (rs.next()) {
@@ -77,6 +78,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public List<Long> deleteFriend(User user, User userOther) {
         jdbcTemplate.update("DELETE FROM USER_FRIENDS WHERE USER_ID=? AND FRIENDS_ID =?", user.getId(), userOther.getId());
+        addEvent(new Event(System.currentTimeMillis(), user.getId(), "FRIEND", "REMOVE", 0L, userOther.getId()));
         return jdbcTemplate.query("SELECT FRIENDS_ID FROM USER_FRIENDS WHERE USER_ID=?", rs -> {
             List<Long> userFriends = new ArrayList<>();
             while (rs.next()) {
@@ -88,9 +90,11 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> getUser(long id) {
-        return jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?", new BeanPropertyRowMapper<>(User.class), id)
+        return Optional.ofNullable(jdbcTemplate.query("SELECT * FROM USERS WHERE ID=?",
+                        new BeanPropertyRowMapper<>(User.class), id)
                 .stream()
-                .findFirst();
+                .findAny()
+                .orElseThrow(() -> new UserNotFoundException("Такого пользователя не существует")));
     }
 
     @Override
@@ -120,5 +124,22 @@ public class UserDaoImpl implements UserDao {
                 newUser.getBirthday(),
                 newUser.getId());
         return newUser;
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        String sql = "DELETE FROM USERS WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    private void addEvent(Event event) {
+        jdbcTemplate.update(
+                "INSERT INTO feed (created_at, user_id, event_type, operation, entity_id) VALUES (?, ?, ?, ?, ?);",
+                event.getTimestamp(),
+                event.getUserId(),
+                event.getEventType(),
+                event.getOperation(),
+                event.getEntityId()
+        );
     }
 }
